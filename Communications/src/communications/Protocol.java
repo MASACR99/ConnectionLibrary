@@ -13,16 +13,19 @@ import java.util.ArrayList;
  */
 public class Protocol {
     
-    ArrayList<Integer> nonUsableIDs = new ArrayList<>();
-    private ArrayList<ProtocolDescription> desc = new ArrayList<>();
+    private ArrayList<Integer> nonUsableIDs;
+    private ArrayList<ProtocolDescription> protocolList;
     
     public Protocol(){
-        
+        this.nonUsableIDs = new ArrayList<>();
+        this.protocolList = new ArrayList <>();
+        this.protocolList.add(new ProtocolDescription(1, "Socket test", "Integer"));
+        this.protocolList.add(new ProtocolDescription(2, "Socket test ACK", "Integer"));
     }
     
     public boolean addCmd(int id, ProtocolDescription desc){
         if(nonUsableIDs.add(id)){
-            this.desc.add(desc);
+            this.protocolList.add(desc);
             return true;
         }else{
             return false;
@@ -30,7 +33,7 @@ public class Protocol {
     }
     
     public ProtocolDescription getProtocol(int id){
-        for(ProtocolDescription protocol : desc){
+        for(ProtocolDescription protocol : protocolList){
             if(protocol.getId() == id){
                 return protocol;
             }
@@ -40,5 +43,23 @@ public class Protocol {
     
     public ProtocolDataPacket constructPacket(int id, int source, int target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
+    }
+    
+    public boolean processMessage(Connection conn,ProtocolDataPacket po){
+        if (po!=null){
+            switch (po.getId()){
+                case 1:
+                    conn.answerTestRequest(po);
+                    break;
+                    
+                case 2: 
+                    conn.getHealthSurveivor().checkTestAnswer(po);
+                    break;
+                
+                default:
+                    return false;
+            }
+        }
+        return true;
     }
 }
