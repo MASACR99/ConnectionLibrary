@@ -54,8 +54,9 @@ public class ServerConnector implements Runnable{
         }
     }
     
-    public byte[] getMac(){
+    public String getMac(){
         try{
+            //TO DO: Change byte[] to String
             return NetworkInterface.getByInetAddress(serverSocket.getInetAddress()).getHardwareAddress();
         }catch(Exception ex){
             System.out.println("Couldnt get Mac address");
