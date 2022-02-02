@@ -45,7 +45,7 @@ public class Connection implements Runnable{
         this.serverHealth = new ServerHealth(this);
     }
     
-    //TO DO: Do we really need a getter and setter?
+    //TO DO: Do we really need all of this getters and setters?
     public void setServerHealth(ServerHealth serverHealth) {
         this.serverHealth = serverHealth;
     }
@@ -69,8 +69,6 @@ public class Connection implements Runnable{
     public void setLocalMAC(String localMAC) {
         this.localMAC = localMAC;
     }
-    
-    
 
     public long getLastMessageReceived() {
         return lastMessageReceived;

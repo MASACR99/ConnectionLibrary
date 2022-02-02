@@ -15,12 +15,10 @@ public class ProtocolDataPacket implements Serializable{
     //This will contain a full packet, this has the ability to be sent via
     //socket or be received and read.
     
-    //TO DO: Change int based ids fro mac addresses based on strings
-    
-    private String sourceID;
-    private String targetID;
-    private int id;
-    private Object object;
+    private final String sourceID;
+    private final String targetID;
+    private final int id;
+    private final Object object;
     
     public ProtocolDataPacket(String source, String target, int id, Object obj){
         this.sourceID = source;

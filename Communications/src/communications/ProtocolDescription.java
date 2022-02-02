@@ -10,9 +10,9 @@ package communications;
  * @author masa
  */
 public class ProtocolDescription {
-    private int id;
-    private String description;
-    private String expectedReturn;
+    private final int id;
+    private final String description;
+    private final String expectedReturn;
     
     public ProtocolDescription(int id, String description, String expectedReturn){
         this.id = id;
