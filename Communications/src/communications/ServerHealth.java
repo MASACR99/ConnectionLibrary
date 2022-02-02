@@ -5,6 +5,8 @@
  */
 package communications;
 
+import static communications.Connection.ACKMAXWAIT;
+import static communications.Connection.SERVERHEALTHMAXWAIT;
 import java.nio.ByteBuffer;
 import java.util.Random;
 

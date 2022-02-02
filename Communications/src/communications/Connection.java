@@ -18,10 +18,15 @@ import java.net.Socket;
  */
 public class Connection implements Runnable{
     
-    private MyTask myTask;
+    //TO DO: Check if this implementation of statics is correct for our app
+    public static int PORT = 42069;
+    public static int SERVERHEALTHMAXWAIT = 1500;
+    public static int ACKMAXWAIT = 2500;
+    //TO DO: Change code to not use the main
+    private Communications comms;
     private Protocol protocol;
     private Socket socket;
-    private HealthSurveivor healthSurveivor;
+    private ServerHealth serverHealth;
     private boolean statusOk;
     private long lastTimeSendingOk;
     private InetAddress ip;
@@ -29,8 +34,8 @@ public class Connection implements Runnable{
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
-    public Connection(MyTask myTask, Socket socket) throws IOException {
-        this.myTask = myTask;
+    public Connection(Communications comms, Socket socket) throws IOException {
+        this.comms = comms;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
         this.protocol=new Protocol();
@@ -38,21 +43,23 @@ public class Connection implements Runnable{
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
         this.lastTimeSendingOk = System.currentTimeMillis();
+        this.serverHealth = new ServerHealth(this);
+    }
+    
+    //TO DO: Do we really need a getter and setter?
+    public void setServerHealth(ServerHealth serverHealth) {
+        this.serverHealth = serverHealth;
     }
 
-    public void setHealthSurveivor(HealthSurveivor healthSurveivor) {
-        this.healthSurveivor = healthSurveivor;
-    }
-
-    public HealthSurveivor getHealthSurveivor() {
-        return healthSurveivor;
+    public ServerHealth getServerHealth() {
+        return serverHealth;
     }
 
     public long getLastTimeSendingOk() {
         return lastTimeSendingOk;
     }
 
-    public String getIp() {
+    public InetAddress getIp() {
         return ip;
     }
 
@@ -81,7 +88,7 @@ public class Connection implements Runnable{
         lastTimeSendingOk=System.currentTimeMillis();
         while (true){
             if (this.statusOk){
-                ProtocolObject recibido=recive();
+                ProtocolDataPacket recibido=recive();
                 this.protocol.processMessage(this, recibido);
                 lastTimeSendingOk=System.currentTimeMillis();
             }
@@ -94,29 +101,29 @@ public class Connection implements Runnable{
         }
     }
     
-    public synchronized void send(ProtocolObject po){
+    public synchronized void send(ProtocolDataPacket po){
         try {
-            System.out.println("Enviando: "+po.getDescription());
             this.output.writeObject(po);
         } catch (IOException ex) {
             System.out.println("No enviado: "+ex.getMessage());
         }
     }
     
-    public ProtocolObject recive(){
-        ProtocolObject object=null;
+    public ProtocolDataPacket recive(){
+        ProtocolDataPacket object=null;
         try {
-            object = (ProtocolObject)this.input.readObject();
+            object = (ProtocolDataPacket)this.input.readObject();
         } catch (Exception ex) {
             System.out.println("Excepcion recibiendo mensaje: "+ex.getMessage());
             this.statusOk=false;
-            this.healthSurveivor.setTestRequestWaiting(false);
+            this.serverHealth.setTestRequestWaiting(false);
         }
         return object;
     }
     
-    public void answerTestRequest(ProtocolObject poRecived){
-        ProtocolObject po = new ProtocolObject(1,poRecived.getSourceId(),2,"TestRequestACK",poRecived.getData());
+    public void answerTestRequest(ProtocolDataPacket poRecived){
+        //TO DO: Change static id for dynamic ones
+        ProtocolDataPacket po = new ProtocolDataPacket(1,poRecived.getSourceID(),2,poRecived.getObject());
         send(po);
     }
     

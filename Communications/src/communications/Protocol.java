@@ -53,7 +53,7 @@ public class Protocol {
                     break;
                     
                 case 2: 
-                    conn.getHealthSurveivor().checkTestAnswer(po);
+                    conn.getServerHealth().checkTestAnswer(po);
                     break;
                 
                 default:

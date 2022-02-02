@@ -5,6 +5,7 @@
  */
 package communications;
 
+import static communications.Connection.PORT;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 
@@ -36,9 +37,11 @@ public class ServerConnector implements Runnable{
                 //If we have available connections (at least one of the connections is socket null and
                 //status false
                 
-                //We will have to open a new connection for each one and have a 
+                //TO DO: have to open a new connection for each one and have a 
                 //handshake before fully accepting the connection and saving it
-                if(comms.availableConnections()){
+                
+                //TO DO: Change this part below to not use the main (the commented part)
+                /*if(comms.availableConnections()){
                     //Send to communications the socket so it's saved
                     comms.sendSocket(serverSocket.accept());
                     //comms.sendId();
@@ -46,7 +49,7 @@ public class ServerConnector implements Runnable{
                     //TODO: Change empty accept for an accept + redirection, giving
                     //the connecting client an ip to connect to
                     serverSocket.accept().close();
-                }
+                }*/
             } catch (Exception e) {
                 System.out.println("server error");
                 e.printStackTrace();
@@ -54,10 +57,18 @@ public class ServerConnector implements Runnable{
         }
     }
     
+    //TO DO: Test this, computers may have many macs and ips at the same time, we just need
+    //one mac to identify ourselves, if this returns one correctly, this should be good enough
     public String getMac(){
         try{
             //TO DO: Change byte[] to String
-            return NetworkInterface.getByInetAddress(serverSocket.getInetAddress()).getHardwareAddress();
+            byte[] mac = NetworkInterface.getByInetAddress(serverSocket.getInetAddress()).getHardwareAddress();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mac.length; i++) {
+                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+            }
+            String address = sb.toString();
+            return address;
         }catch(Exception ex){
             System.out.println("Couldnt get Mac address");
             return null;

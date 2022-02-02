@@ -5,6 +5,7 @@
  */
 package communications;
 
+import static communications.Connection.PORT;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -16,11 +17,13 @@ import java.util.Scanner;
  */
 public class ClientConnector implements Runnable{
     
-    private MyTask myTask; 
-        private ArrayList <Connection> connectionsList;
+    //TO DO: Check if actual implementation of PORT is valid for our application
     
-    public ClientConnector(MyTask myTask) {
-        this.myTask = myTask;
+    private Communications comms; 
+    private ArrayList <Connection> connectionsList;
+    
+    public ClientConnector(Communications comms) {
+        this.comms = comms;
         this.connectionsList = new ArrayList <>();
     }
     
@@ -28,7 +31,8 @@ public class ClientConnector implements Runnable{
         try {
             Socket socket=new Socket(ip,port);
             System.out.println("Connectado");
-            myTask.createConnection(socket);
+            //TO DO: This will probably return a socket if the connection work or null if it doesnt
+            //comms.createConnection(socket);
             
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
@@ -39,7 +43,7 @@ public class ClientConnector implements Runnable{
         Scanner sc=new Scanner(System.in);
         System.out.println("A que direccion nos conectamos?");
         String ip=sc.nextLine();
-        this.connect(ip, MyTask.PORT);
+        this.connect(ip, PORT);
     }
     
     @Override
@@ -61,7 +65,7 @@ public class ClientConnector implements Runnable{
     
     private void tryToReconnect(Connection conn){
         try {
-            Socket socket=new Socket(conn.getIp(),MyTask.PORT);
+            Socket socket=new Socket(conn.getIp(),PORT);
             conn.setSocket(socket);
             conn.setStatusOk(true);
             System.out.println("Reconnectado");
