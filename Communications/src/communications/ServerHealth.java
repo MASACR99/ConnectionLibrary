@@ -19,20 +19,20 @@ public class ServerHealth implements Runnable{
     //TO DO: Cambiar valor dinamicas de temps de espera,... per CONSTANTS.
     
     private Connection connection;
-    private long timeTestRequest;
-    private boolean testRequestWaiting;
-    private int lastTestCode;
+    private long timeSent;
+    private boolean ACKwait;
+    private int checkCode;
 
     public ServerHealth(Connection connection) {
         this.connection = connection;
     }
 
     public int getLastTestCode() {
-        return lastTestCode;
+        return checkCode;
     }
 
-    public void setTestRequestWaiting(boolean testRequestWaiting) {
-        this.testRequestWaiting = testRequestWaiting;
+    public void setTestRequestWaiting(boolean ACKwait) {
+        this.ACKwait = ACKwait;
     }
     
     @Override
@@ -51,15 +51,15 @@ public class ServerHealth implements Runnable{
         if (this.connection.isStatusOk() && System.currentTimeMillis()-this.connection.getLastTimeSendingOk()>SERVERHEALTHMAXWAIT){
             this.createTestMessage();
             //TO DO: This ids are fixed, change
-            ProtocolDataPacket po=new ProtocolDataPacket(1,2,1,Integer.toString(this.lastTestCode));
-            this.connection.send(po);
+            ProtocolDataPacket packet=new ProtocolDataPacket(1,2,1,Integer.toString(this.checkCode));
+            this.connection.send(packet);
             this.waitTestAnswer();
             
-            if (testRequestWaiting){
+            if (ACKwait){
                 System.out.println("Socket is dead, restarting...");
                 this.connection.setStatusOk(false);
                 this.connection.cerrarSocket();
-                this.testRequestWaiting=false;
+                this.ACKwait=false;
             }
         }
     }
@@ -68,15 +68,15 @@ public class ServerHealth implements Runnable{
         Random r=new Random();
         byte [] bytes=new byte[4];
         r.nextBytes(bytes);
-        this.lastTestCode=ByteBuffer.wrap(bytes).getInt();
+        this.checkCode=ByteBuffer.wrap(bytes).getInt();
     }
     
     private void waitTestAnswer(){
-        this.testRequestWaiting=true;
-        this.timeTestRequest=System.currentTimeMillis();
-        long timeRequestPassed=System.currentTimeMillis()-this.timeTestRequest;
-        while (timeRequestPassed<ACKMAXWAIT && testRequestWaiting){
-            timeRequestPassed=System.currentTimeMillis()-this.timeTestRequest;
+        this.ACKwait=true;
+        this.timeSent=System.currentTimeMillis();
+        long timeRequestPassed=System.currentTimeMillis()-this.timeSent;
+        while (timeRequestPassed<ACKMAXWAIT && ACKwait){
+            timeRequestPassed=System.currentTimeMillis()-this.timeSent;
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ex) {
@@ -85,9 +85,9 @@ public class ServerHealth implements Runnable{
         }
     }
     
-    public void checkTestAnswer(ProtocolDataPacket po){
-        if (((int)po.getObject()) == lastTestCode){
-            this.testRequestWaiting=false;
+    public void checkTestAnswer(ProtocolDataPacket packet){
+        if (((int)packet.getObject()) == checkCode){
+            this.ACKwait=false;
         }
     }
 }

@@ -72,7 +72,7 @@ public class Connection implements Runnable{
     }
 
     public void setSocket(Socket socket) throws IOException {
-        System.out.println("abriendo sockets");
+        System.out.println("Openning socket...");
         this.socket = socket;
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
@@ -84,7 +84,7 @@ public class Connection implements Runnable{
     
     @Override
     public void run() {
-        System.out.println("Conexion hecha");
+        System.out.println("Connection succesfull");
         lastTimeSendingOk=System.currentTimeMillis();
         while (true){
             if (this.statusOk){
@@ -101,11 +101,11 @@ public class Connection implements Runnable{
         }
     }
     
-    public synchronized void send(ProtocolDataPacket po){
+    public synchronized void send(ProtocolDataPacket packet){
         try {
-            this.output.writeObject(po);
+            this.output.writeObject(packet);
         } catch (IOException ex) {
-            System.out.println("No enviado: "+ex.getMessage());
+            System.out.println("Couldn't send message: "+ex.getMessage());
         }
     }
     
@@ -114,28 +114,28 @@ public class Connection implements Runnable{
         try {
             object = (ProtocolDataPacket)this.input.readObject();
         } catch (Exception ex) {
-            System.out.println("Excepcion recibiendo mensaje: "+ex.getMessage());
+            System.out.println("Error receiving message: "+ex.getMessage());
             this.statusOk=false;
             this.serverHealth.setTestRequestWaiting(false);
         }
         return object;
     }
     
-    public void answerTestRequest(ProtocolDataPacket poRecived){
+    public void answerTestRequest(ProtocolDataPacket packetReceived){
         //TO DO: Change static id for dynamic ones
-        ProtocolDataPacket po = new ProtocolDataPacket(1,poRecived.getSourceID(),2,poRecived.getObject());
+        ProtocolDataPacket po = new ProtocolDataPacket(1,packetReceived.getSourceID(),2,packetReceived.getObject());
         send(po);
     }
     
     public void cerrarSocket(){
         try {
-            System.out.println("cerrando sockets");
+            System.out.println("Closing sockets");
             this.socket.close();
             this.input.close();
             this.output.close();
             this.socket = null;
         } catch (IOException ex) {
-            System.out.println("Socket ya cerrado "+ex.getMessage());
+            System.out.println("Error closing sockets: "+ex.getMessage());
         }
     }
     

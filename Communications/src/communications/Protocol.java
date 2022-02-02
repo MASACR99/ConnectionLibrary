@@ -45,15 +45,15 @@ public class Protocol {
         return new ProtocolDataPacket(source, target, id, object);
     }
     
-    public boolean processMessage(Connection conn,ProtocolDataPacket po){
-        if (po!=null){
-            switch (po.getId()){
+    public boolean processMessage(Connection conn,ProtocolDataPacket packet){
+        if (packet!=null){
+            switch (packet.getId()){
                 case 1:
-                    conn.answerTestRequest(po);
+                    conn.answerTestRequest(packet);
                     break;
                     
                 case 2: 
-                    conn.getServerHealth().checkTestAnswer(po);
+                    conn.getServerHealth().checkTestAnswer(packet);
                     break;
                 
                 default:

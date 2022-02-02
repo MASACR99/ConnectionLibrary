@@ -9,7 +9,6 @@ import static communications.Connection.PORT;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  *
@@ -30,20 +29,13 @@ public class ClientConnector implements Runnable{
     public void connect(String ip, int port){
         try {
             Socket socket=new Socket(ip,port);
-            System.out.println("Connectado");
+            System.out.println("Connected");
             //TO DO: This will probably return a socket if the connection work or null if it doesnt
             //comms.createConnection(socket);
             
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
-    }
-    
-    public void realizarAccion(){
-        Scanner sc=new Scanner(System.in);
-        System.out.println("A que direccion nos conectamos?");
-        String ip=sc.nextLine();
-        this.connect(ip, PORT);
     }
     
     @Override
@@ -68,10 +60,9 @@ public class ClientConnector implements Runnable{
             Socket socket=new Socket(conn.getIp(),PORT);
             conn.setSocket(socket);
             conn.setStatusOk(true);
-            System.out.println("Reconnectado");
-            
+            System.out.println("Reconnected");
         } catch (IOException ex) {
-            System.out.println(ex.getMessage()+": No es posible reconectarse");
+            System.out.println("Error reconnecting: " + ex.getMessage());
         }
     }
     
