@@ -6,8 +6,10 @@
 package communications;
 
 import static communications.Connection.PORT;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.util.Enumeration;
 
 /**
  *
@@ -19,13 +21,8 @@ public class ServerConnector implements Runnable{
     //if there's an empty connection and fills it with the data
     
     private ServerSocket serverSocket;
-    private Communications comms;
-    
-    public ServerConnector(Communications comms){
-        this.comms = comms;
-    }
-    
-    public void connectar() {
+
+    public void connect() {
         try{
             serverSocket = new ServerSocket(PORT);
         }catch(Exception ex){
@@ -33,7 +30,8 @@ public class ServerConnector implements Runnable{
         }
         while(true){
             try {
-                System.out.println("Server online and waiting for connections...");
+                Thread.sleep(50);
+                //System.out.println("Server online and waiting for connections...");
                 //If we have available connections (at least one of the connections is socket null and
                 //status false
                 
@@ -57,12 +55,12 @@ public class ServerConnector implements Runnable{
         }
     }
     
-    //TO DO: Test this, computers may have many macs and ips at the same time, we just need
-    //one mac to identify ourselves, if this returns one correctly, this should be good enough
     public String getMac(){
+        //This gets the first MAC it finds. We may need to check which MAC we get.
         try{
-            //TO DO: Change byte[] to String
-            byte[] mac = NetworkInterface.getByInetAddress(serverSocket.getInetAddress()).getHardwareAddress();
+            InetAddress localHost = InetAddress.getLocalHost();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            byte[] mac = ni.getHardwareAddress();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mac.length; i++) {
                 sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
@@ -70,6 +68,7 @@ public class ServerConnector implements Runnable{
             String address = sb.toString();
             return address;
         }catch(Exception ex){
+            ex.printStackTrace();
             System.out.println("Couldnt get Mac address");
             return null;
         }
@@ -78,7 +77,7 @@ public class ServerConnector implements Runnable{
     @Override
     public void run() {
         while(true){
-            connectar();
+            connect();
         }
     }
     

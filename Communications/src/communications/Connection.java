@@ -19,6 +19,7 @@ import java.net.Socket;
 public class Connection implements Runnable{
     
     //TO DO: Check if this implementation of statics is correct for our app
+    //no es correcte, aniran a nes controlador.
     public static final int PORT = 42069;
     public static final int SERVERHEALTHMAXWAIT = 1500;
     public static final int ACKMAXWAIT = 2500;

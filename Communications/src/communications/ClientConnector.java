@@ -18,10 +18,10 @@ public class ClientConnector implements Runnable{
     
     //TO DO: Check if actual implementation of PORT is valid for our application
     
-    private Communications comms; 
+    private CommunicationController comms; 
     private ArrayList <Connection> connectionsList;
     
-    public ClientConnector(Communications comms) {
+    public ClientConnector(CommunicationController comms) {
         this.comms = comms;
         this.connectionsList = new ArrayList <>();
     }

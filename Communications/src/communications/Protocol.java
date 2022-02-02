@@ -11,6 +11,22 @@ import java.util.ArrayList;
  *
  * @author masa
  */
+/*
+
+1- server health check (envia missatge per saber si tot obe)
+2- server health ack (respon que to be)
+3- server ask Type (diferencia entre mvl i pc, client retorna el tipo de modul qu es)
+4- validateConnection (retorna true si ok, el servidor no te totes les conexions ocupades, false si les te ocupades)
+5- CloseConnection (una conexio que es tanca envia aixo perque l'altre part sapiga que es va a tancar i per tant tambe la tanqui)
+
+mes endevant:
+6- demana a veinat directe mac ??? alomillo no necesari
+7- demena mac qualsevol veinat
+8- ask aveilable, s'intenten conectar, si no tens puesto demenaras a tots es veinats amem si colcu en te (retorna null o innetAddress)
+9- ChangePositions
+10- askLookup, a ne veinat
+
+*/
 public class Protocol {
     
     private ArrayList<Integer> nonUsableIDs;
