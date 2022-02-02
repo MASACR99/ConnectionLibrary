@@ -26,15 +26,15 @@ public class ClientConnector implements Runnable{
         this.connectionsList = new ArrayList <>();
     }
     
-    public void connect(String ip, int port){
+    public Socket connect(String ip, int port){
         try {
             Socket socket=new Socket(ip,port);
             System.out.println("Connected");
-            //TO DO: This will probably return a socket if the connection work or null if it doesnt
-            //comms.createConnection(socket);
+            return socket;
             
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
+            return null;
         }
     }
     

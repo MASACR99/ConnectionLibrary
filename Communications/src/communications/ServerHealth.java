@@ -16,8 +16,6 @@ import java.util.Random;
  */
 public class ServerHealth implements Runnable{
     
-    //TO DO: Cambiar valor dinamicas de temps de espera,... per CONSTANTS.
-    
     private Connection connection;
     private long timeSent;
     private boolean ACKwait;

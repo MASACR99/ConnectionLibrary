@@ -22,8 +22,6 @@ public class Connection implements Runnable{
     public static int PORT = 42069;
     public static int SERVERHEALTHMAXWAIT = 1500;
     public static int ACKMAXWAIT = 2500;
-    //TO DO: Change code to not use the main
-    private Communications comms;
     private Protocol protocol;
     private Socket socket;
     private ServerHealth serverHealth;
@@ -34,8 +32,7 @@ public class Connection implements Runnable{
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
-    public Connection(Communications comms, Socket socket) throws IOException {
-        this.comms = comms;
+    public Connection(Socket socket) throws IOException {
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
         this.protocol=new Protocol();
