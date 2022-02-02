@@ -19,15 +19,17 @@ import java.net.Socket;
 public class Connection implements Runnable{
     
     //TO DO: Check if this implementation of statics is correct for our app
-    public static int PORT = 42069;
-    public static int SERVERHEALTHMAXWAIT = 1500;
-    public static int ACKMAXWAIT = 2500;
+    public static final int PORT = 42069;
+    public static final int SERVERHEALTHMAXWAIT = 1500;
+    public static final int ACKMAXWAIT = 2500;
     private Protocol protocol;
     private Socket socket;
     private ServerHealth serverHealth;
     private boolean statusOk;
-    private long lastTimeSendingOk;
+    private long lastMessageReceived;
     private InetAddress ip;
+    private String connectedMAC;
+    private String localMAC;
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -39,7 +41,7 @@ public class Connection implements Runnable{
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
-        this.lastTimeSendingOk = System.currentTimeMillis();
+        this.lastMessageReceived = System.currentTimeMillis();
         this.serverHealth = new ServerHealth(this);
     }
     
@@ -52,8 +54,26 @@ public class Connection implements Runnable{
         return serverHealth;
     }
 
-    public long getLastTimeSendingOk() {
-        return lastTimeSendingOk;
+    public String getConnectedMAC() {
+        return connectedMAC;
+    }
+
+    public void setConnectedMAC(String connectedMAC) {
+        this.connectedMAC = connectedMAC;
+    }
+
+    public String getLocalMAC() {
+        return localMAC;
+    }
+
+    public void setLocalMAC(String localMAC) {
+        this.localMAC = localMAC;
+    }
+    
+    
+
+    public long getLastMessageReceived() {
+        return lastMessageReceived;
     }
 
     public InetAddress getIp() {
@@ -82,12 +102,12 @@ public class Connection implements Runnable{
     @Override
     public void run() {
         System.out.println("Connection succesfull");
-        lastTimeSendingOk=System.currentTimeMillis();
+        lastMessageReceived=System.currentTimeMillis();
         while (true){
             if (this.statusOk){
                 ProtocolDataPacket recibido=recive();
                 this.protocol.processMessage(this, recibido);
-                lastTimeSendingOk=System.currentTimeMillis();
+                lastMessageReceived=System.currentTimeMillis();
             }
             try {
                 Thread.sleep(50);
@@ -119,8 +139,7 @@ public class Connection implements Runnable{
     }
     
     public void answerTestRequest(ProtocolDataPacket packetReceived){
-        //TO DO: Change static id for dynamic ones
-        ProtocolDataPacket po = new ProtocolDataPacket(1,packetReceived.getSourceID(),2,packetReceived.getObject());
+        ProtocolDataPacket po = new ProtocolDataPacket(this.localMAC,this.connectedMAC,2,packetReceived.getObject());
         send(po);
     }
     

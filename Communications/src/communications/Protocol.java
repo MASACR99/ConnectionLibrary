@@ -41,7 +41,7 @@ public class Protocol {
         return null;
     }
     
-    public ProtocolDataPacket constructPacket(int id, int source, int target, Object object){
+    public ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
     }
     
