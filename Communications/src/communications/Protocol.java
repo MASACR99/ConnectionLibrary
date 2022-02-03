@@ -32,6 +32,7 @@ public class Protocol {
     
     private ArrayList<Integer> nonUsableIDs;
     private ArrayList<ProtocolDescription> protocolList;
+    private final int lengthRequiredProtocol;
     
     public Protocol(){
         this.nonUsableIDs = new ArrayList<>();
@@ -40,11 +41,12 @@ public class Protocol {
         this.protocolList.add(new ProtocolDescription(2, "Socket test ACK", "Integer"));
         this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "Null"));
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
-        this.protocolList.add(new ProtocolDescription(5, "Valiate connection", "Boolean"));
+        this.protocolList.add(new ProtocolDescription(5, "Validate connection", "Boolean"));
+        this.lengthRequiredProtocol = this.protocolList.size();
     }
     
     public boolean addCmd(int id, ProtocolDescription desc){
-        if(nonUsableIDs.add(id)){
+        if(this.nonUsableIDs.add(id) && id > this.lengthRequiredProtocol){
             this.protocolList.add(desc);
             return true;
         }else{
@@ -61,35 +63,47 @@ public class Protocol {
         return null;
     }
     
+    /**
+     * Returns the minimal id that can be used from the beginning.
+     * @return Returns the minimal integer id that can be used from the beginning.
+     */
+    public int getMinId(){
+        return this.lengthRequiredProtocol;
+    }
+    
     public ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
     }
     
     public boolean processMessage(Connection conn,ProtocolDataPacket packet){
         if (packet!=null){
-            switch (packet.getId()){
-                case 1:
-                    conn.answerTestRequest(packet);
-                    break;
-                    
-                case 2: 
-                    conn.getServerHealth().checkTestAnswer(packet);
-                    break;
-                
-                case 3:
-                    conn.sendDeviceType(packet);
-                    break;
-                
-                case 4:
-                    conn.processDeviceType(packet);
-                    break;
-                    
-                case 5:
-                    conn.processValidation(packet);
-                    break;
-                    
-                default:
-                    return false;
+            if(packet.getId() <= 5){
+                switch (packet.getId()){
+                    case 1:
+                        conn.answerTestRequest(packet);
+                        break;
+
+                    case 2: 
+                        conn.getServerHealth().checkTestAnswer(packet);
+                        break;
+
+                    case 3:
+                        conn.sendDeviceType(packet);
+                        break;
+
+                    case 4:
+                        conn.processDeviceType(packet);
+                        break;
+
+                    case 5:
+                        conn.processValidation(packet);
+                        break;
+
+                    default:
+                        return false;
+                }
+            }else{
+                return false;
             }
         }
         return true;

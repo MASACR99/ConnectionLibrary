@@ -52,9 +52,10 @@ public class Connection implements Runnable{
         this.connectionType=CLIENT;
     }
     
-    //TO DO: Do we really need all of this getters and setters?
     public void setServerHealth(ServerHealth serverHealth) {
         this.serverHealth = serverHealth;
+        Thread thread = new Thread(this.serverHealth);
+        thread.start();
     }
 
     public ServerHealth getServerHealth() {
@@ -167,21 +168,24 @@ public class Connection implements Runnable{
     }
     
     public void processDeviceType(ProtocolDataPacket packetReceived){
+        ProtocolDataPacket packet;
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
         int deviceType=(int)packetReceived.getObject(); 
         if (deviceType == MVL){
-            //add a sa llista de connections de mvl
+            validated = true;
+            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
+            send(packet);
+            this.controller.addMobileConnection(this);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
+            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
+            send(packet);
             if (validated){
-            //add a sa llista de connections de pc
+                this.controller.addPcConnection(this);
             }
         }
-        
-        ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
-        send(packet);
         
         if (!validated){
             try {
@@ -194,9 +198,16 @@ public class Connection implements Runnable{
         }
     }
     
+    /**
+     * Last handshake message. If the returned packet is true we save the pc connection
+     * else we close the socket and stop the thread from running anymore.
+     * Always receives a pc connections, since mobile ones don't need to
+     * be validated.
+     * @param packetReceived This is the last packet received from the starting handshake. 
+     */
     public void processValidation(ProtocolDataPacket packetReceived){
         if ((boolean)packetReceived.getObject()){
-            //ficar conexio a llista pcs, ya que sempre sira pc s'altre banda(servidor)
+            this.controller.addPcConnection(this);
         } else {
             this.cerrarSocket();
             this.running=false;

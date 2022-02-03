@@ -92,6 +92,20 @@ public class CommunicationController {
             System.out.println("Problem creating a connection: " + ex.getMessage());
         }
     }
+    
+    public void addPcConnection(Connection conn){
+        if(availableConnections()){
+            ServerHealth health = new ServerHealth(this,conn);
+            conn.setServerHealth(health);
+            pcConnections.add(conn);
+        }
+    }
+    
+    public void addMobileConnection(Connection conn){
+        ServerHealth health = new ServerHealth(this,conn);
+        conn.setServerHealth(health);
+        mobileConnections.add(conn);
+    }
 
     /**
      * @param args the command line arguments

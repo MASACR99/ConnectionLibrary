@@ -40,15 +40,7 @@ public class ServerConnector implements Runnable{
                 
                 //TO DO: have to open a new connection for each one and have a 
                 //handshake before fully accepting the connection and saving it
-                
-                if(controller.availableConnections()){
-                    //Send to communications the socket so it's saved
-                    controller.getSocket(serverSocket.accept());
-                }else{
-                    //TODO: Change empty accept for an accept + redirection, giving
-                    //the connecting client an ip to connect to
-                    serverSocket.accept().close();
-                }
+                controller.getSocket(serverSocket.accept());
             } catch (Exception e) {
                 System.out.println("server error");
                 e.printStackTrace();
