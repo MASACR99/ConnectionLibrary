@@ -41,16 +41,14 @@ public class ServerConnector implements Runnable{
                 //TO DO: have to open a new connection for each one and have a 
                 //handshake before fully accepting the connection and saving it
                 
-                //TO DO: Change this part below to not use the main (the commented part)
-                /*if(comms.availableConnections()){
+                if(controller.availableConnections()){
                     //Send to communications the socket so it's saved
-                    comms.sendSocket(serverSocket.accept());
-                    //comms.sendId();
+                    controller.getSocket(serverSocket.accept());
                 }else{
                     //TODO: Change empty accept for an accept + redirection, giving
                     //the connecting client an ip to connect to
                     serverSocket.accept().close();
-                }*/
+                }
             } catch (Exception e) {
                 System.out.println("server error");
                 e.printStackTrace();
