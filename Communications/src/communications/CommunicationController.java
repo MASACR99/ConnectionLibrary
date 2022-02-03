@@ -159,7 +159,7 @@ public class CommunicationController {
                 case 1:
                     System.out.println("Gib ip");
                     input.nextLine();
-                    input.nextLine();
+                    con.connectToIp(input.nextLine());
                     break;
                 case 2:
                     System.out.println("Not yet bookaroo");
