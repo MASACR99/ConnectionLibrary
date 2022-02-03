@@ -5,11 +5,9 @@
  */
 package communications;
 
-import static communications.Connection.PORT;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.util.Enumeration;
 
 /**
  *
@@ -19,12 +17,17 @@ public class ServerConnector implements Runnable{
     
     //This class waits for external connections, when one is received it checks
     //if there's an empty connection and fills it with the data
+    private CommunicationController controller;
+    
+    public ServerConnector(CommunicationController control){
+        controller = control;
+    }
     
     private ServerSocket serverSocket;
 
     public void connect() {
         try{
-            serverSocket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(controller.PORT);
         }catch(Exception ex){
             ex.printStackTrace();
         }

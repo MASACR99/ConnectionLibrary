@@ -5,7 +5,6 @@
  */
 package communications;
 
-import static communications.Connection.PORT;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,11 +17,11 @@ public class ClientConnector implements Runnable{
     
     //TO DO: Check if actual implementation of PORT is valid for our application
     
-    private CommunicationController comms; 
+    private CommunicationController controller; 
     private ArrayList <Connection> connectionsList;
     
-    public ClientConnector(CommunicationController comms) {
-        this.comms = comms;
+    public ClientConnector(CommunicationController controller) {
+        this.controller = controller;
         this.connectionsList = new ArrayList <>();
     }
     
@@ -57,7 +56,7 @@ public class ClientConnector implements Runnable{
     
     private void tryToReconnect(Connection conn){
         try {
-            Socket socket=new Socket(conn.getIp(),PORT);
+            Socket socket=new Socket(conn.getIp(),controller.PORT);
             conn.setSocket(socket);
             conn.setStatusOk(true);
             System.out.println("Reconnected");

@@ -5,6 +5,8 @@
  */
 package communications;
 
+import static communications.CommunicationController.MVL;
+import static communications.CommunicationController.PC;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,13 +20,7 @@ import java.net.Socket;
  */
 public class Connection implements Runnable{
     
-    //TO DO: Check if this implementation of statics is correct for our app
-    //no es correcte, aniran a nes controlador.
-    public static final int PORT = 42069;
-    public static final int SERVERHEALTHMAXWAIT = 1500;
-    public static final int ACKMAXWAIT = 2500;
-    public static final int PC=37;
-    public static final int MVL=38;
+    private CommunicationController controller;
     private Protocol protocol;
     private Socket socket;
     private ServerHealth serverHealth;
@@ -37,7 +33,8 @@ public class Connection implements Runnable{
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
-    public Connection(Socket socket) throws IOException {
+    public Connection(CommunicationController controller, Socket socket) throws IOException {
+        this.controller = controller;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
         this.protocol=new Protocol();
@@ -45,7 +42,7 @@ public class Connection implements Runnable{
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
         this.lastMessageReceived = System.currentTimeMillis();
-        this.serverHealth = new ServerHealth(this);
+        this.serverHealth = new ServerHealth(controller, this);
     }
     
     //TO DO: Do we really need all of this getters and setters?

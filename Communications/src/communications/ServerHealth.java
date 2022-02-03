@@ -5,8 +5,6 @@
  */
 package communications;
 
-import static communications.Connection.ACKMAXWAIT;
-import static communications.Connection.SERVERHEALTHMAXWAIT;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
@@ -16,13 +14,15 @@ import java.util.Random;
  */
 public class ServerHealth implements Runnable{
     
-    private Connection connection;
+    private final Connection connection;
+    private final CommunicationController controller;
     private long timeSent;
     private boolean ACKwait;
     private int checkCode;
 
-    public ServerHealth(Connection connection) {
+    public ServerHealth(CommunicationController controller, Connection connection) {
         this.connection = connection;
+        this.controller = controller;
     }
 
     public int getLastTestCode() {
@@ -46,7 +46,7 @@ public class ServerHealth implements Runnable{
     }
     
     private void checkState(){
-        if (this.connection.isStatusOk() && System.currentTimeMillis()-this.connection.getLastMessageReceived()>SERVERHEALTHMAXWAIT){
+        if (this.connection.isStatusOk() && System.currentTimeMillis()-this.connection.getLastMessageReceived()>controller.SERVERHEALTHMAXWAIT){
             this.createTestMessage();
             ProtocolDataPacket packet=new ProtocolDataPacket(connection.getLocalMAC(),connection.getConnectedMAC(),1,Integer.toString(this.checkCode));
             this.connection.send(packet);
@@ -72,7 +72,7 @@ public class ServerHealth implements Runnable{
         this.ACKwait=true;
         this.timeSent=System.currentTimeMillis();
         long timeRequestPassed=System.currentTimeMillis()-this.timeSent;
-        while (timeRequestPassed<ACKMAXWAIT && ACKwait){
+        while (timeRequestPassed<controller.ACKMAXWAIT && ACKwait){
             timeRequestPassed=System.currentTimeMillis()-this.timeSent;
             try {
                 Thread.sleep(50);
