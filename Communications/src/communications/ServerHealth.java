@@ -35,7 +35,7 @@ public class ServerHealth implements Runnable{
     
     @Override
     public void run() {
-        while (true){
+        while (connection.isStatusOk()){
             checkState();
             try {
                 Thread.sleep(20);
