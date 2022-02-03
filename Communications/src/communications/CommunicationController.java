@@ -137,6 +137,14 @@ public class CommunicationController {
         }
     }
     
+    public void nullifyConnection(Connection conn){
+        for(int i=0; i<this.pcConnections.size(); i++){
+            if(this.pcConnections.get(i).equals(conn)){
+                this.pcConnections.set(i, null);
+            }
+        }
+    }
+    
     private boolean sameConnection(Connection conn){
         boolean same = false;
         for(Connection con : this.pcConnections){

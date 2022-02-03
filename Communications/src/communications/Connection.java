@@ -11,9 +11,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  *
@@ -212,6 +209,25 @@ public class Connection implements Runnable{
             this.cerrarSocket();
             this.running=false;
         }
+    }
+    
+    
+    public void notifyClousure(){
+        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,null);
+        this.send(packet);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            System.out.println("sleep processDeviceType: "+ex.getMessage());
+        }
+        this.cerrarSocket();
+        this.running=false;
+    }
+    
+    public void processClousure(){
+        this.controller.nullifyConnection(this);
+        this.cerrarSocket();
+        this.running=false;
     }
     
     public void cerrarSocket(){

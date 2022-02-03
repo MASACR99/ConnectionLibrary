@@ -15,17 +15,18 @@ import java.util.ArrayList;
 
 1- server health check (envia missatge per saber si tot obe V
 2- server health ack (respon que to be) V
-3- server ask Type (diferencia entre mvl i pc, seran constants, client retorna el tipo de modul 
-qu es, no tendra target ja que sera es primer missatge enviat per server a nes client recient conectar)
-4- validateConnection (retorna true si ok, el servidor no te totes les conexions ocupades, false si les te ocupades)
-5- CloseConnection (una conexio que es tanca envia aixo perque l'altre part sapiga que es va a tancar i per tant tambe la tanqui)
+3- server ask Type (diferencia entre mvl i pc, seran constants, client retorna el tipo de modul  
+qu es, no tendra target ja que sera es primer missatge enviat per server a nes client recient conectar) V
+4- validateConnection (retorna true si ok, el servidor no te totes les conexions ocupades, false si les te ocupades) V
+5- ProcessValidation V
+6- CloseConnection (una conexio que es tanca envia aixo perque l'altre part sapiga que es va a tancar i per tant tambe la tanqui)
 
 mes endevant:
-6- demana a veinat directe mac ??? alomillo no necesari XX
-7- demena mac qualsevol veinat
-8- ask aveilable, s'intenten conectar, si no tens puesto demenaras a tots es veinats amem si colcu en te (retorna null o innetAddress)
-9- ChangePositions
-10- askLookup, a ne veinat
+7- demana a veinat directe mac ??? alomillo no necesari XX
+8- demena mac qualsevol veinat
+9- ask aveilable, s'intenten conectar, si no tens puesto demenaras a tots es veinats amem si colcu en te (retorna null o innetAddress)
+10- ChangePositions
+11- askLookup, a ne veinat
 
 */
 public class Protocol {
@@ -42,6 +43,7 @@ public class Protocol {
         this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "Null"));
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
         this.protocolList.add(new ProtocolDescription(5, "Validate connection", "Boolean"));
+        this.protocolList.add(new ProtocolDescription(6, "Close connection", "Null"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
@@ -98,6 +100,9 @@ public class Protocol {
                     case 5:
                         conn.processValidation(packet);
                         break;
+                        
+                    case 6:
+                        conn.processClousure();
 
                     default:
                         return false;
