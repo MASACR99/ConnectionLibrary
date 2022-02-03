@@ -38,9 +38,9 @@ public class Protocol {
         this.protocolList = new ArrayList <>();
         this.protocolList.add(new ProtocolDescription(1, "Socket test", "Integer"));
         this.protocolList.add(new ProtocolDescription(2, "Socket test ACK", "Integer"));
-        this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "null"));
+        this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "Null"));
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
-        this.protocolList.add(new ProtocolDescription(5, "Valiate connection", "boolean"));
+        this.protocolList.add(new ProtocolDescription(5, "Valiate connection", "Boolean"));
     }
     
     public boolean addCmd(int id, ProtocolDescription desc){
@@ -85,11 +85,7 @@ public class Protocol {
                     break;
                     
                 case 5:
-                    //implementar que fe quan rebem que si esta validada i quan no.
-                    //ens carregam sa conxeio quan no, sa part des servidor ja estira
-                    //tancada just quan envii es missatge. Si s'accepta, fica conexio
-                    //a llista pcs, ja que es que haura validat sira es servidor i sempre sera
-                    //un pc.
+                    conn.processValidation(packet);
                     break;
                     
                 default:

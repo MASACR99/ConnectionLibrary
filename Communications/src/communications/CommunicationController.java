@@ -85,7 +85,7 @@ public class CommunicationController {
     public void getSocket(Socket socket){
         try{
             Connection conn = new Connection(this, socket);
-            conn.setType(SERVER);
+            conn.setConnectionType(SERVER);
             Thread thread = new Thread(conn);
             thread.start();
         }catch(IOException ex){

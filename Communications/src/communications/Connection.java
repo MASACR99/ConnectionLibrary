@@ -5,13 +5,14 @@
  */
 package communications;
 
-import static communications.CommunicationController.MVL;
-import static communications.CommunicationController.PC;
+import static communications.CommunicationController.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -29,6 +30,8 @@ public class Connection implements Runnable{
     private InetAddress ip;
     private String connectedMAC;
     private String localMAC;
+    private int connectionType;
+    private boolean running;
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -43,6 +46,10 @@ public class Connection implements Runnable{
         this.statusOk=true;
         this.lastMessageReceived = System.currentTimeMillis();
         this.serverHealth = new ServerHealth(controller, this);
+        //comença amb 0 ja que sino li feim es setter per cambiar valor a tipus
+        //de conexio, instanciat pes seervidor o pes client, farem que simplement
+        //sigui tractat com una conexio de ses "antigues"
+        this.connectionType=CLIENT;
     }
     
     //TO DO: Do we really need all of this getters and setters?
@@ -60,6 +67,10 @@ public class Connection implements Runnable{
 
     public void setConnectedMAC(String connectedMAC) {
         this.connectedMAC = connectedMAC;
+    }
+
+    public void setConnectionType(int connectionType) {
+        this.connectionType = connectionType;
     }
 
     public String getLocalMAC() {
@@ -99,19 +110,22 @@ public class Connection implements Runnable{
     
     @Override
     public void run() {
+        running=true;
         System.out.println("Connection succesfull");
         lastMessageReceived=System.currentTimeMillis();
-        while (true){
-            if (this.statusOk){
-                ProtocolDataPacket recibido=recive();
-                this.protocol.processMessage(this, recibido);
-                lastMessageReceived=System.currentTimeMillis();
-            }
-            try {
+        if(connectionType==SERVER){
+            this.askDeviceType();
+        }
+        while (running){
+            try{
+                if (this.statusOk){
+                    ProtocolDataPacket recibido=recive();
+                    this.protocol.processMessage(this, recibido);
+                    lastMessageReceived=System.currentTimeMillis();
+                }
                 Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                System.out.println(ex.getMessage());
-
+            } catch (Exception ex) {
+                System.out.println("run connection: "+ex.getMessage());
             }
         }
     }
@@ -141,21 +155,18 @@ public class Connection implements Runnable{
         send(packet);
     }
     
-    //d'on eviarem es missatge que activa aquest metode . serverConnector quan accepta conexio i crea socket??
-    // o pasarem a nes controlador (AckDeviceType)
+    public void askDeviceType(){
+        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,null,3,null);
+        send(packet);
+    }
     
     public void sendDeviceType(ProtocolDataPacket packetReceived){
-        //Reformula. Pc o mvl, com saber-ho? ho posam a un atribut? miram metode per saberho al inicia programa?
-        //diferents ports per pc i android que tenguin aquesta diferenci?
-        //Aqui sera on tendrem sa mac de s'altre per primera vegada si soim client, guardam aqui directement o
-        //ficam dins un altre metode?
         this.connectedMAC = (String) packetReceived.getSourceID();
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,4,PC);
         send(packet);
     }
     
     public void processDeviceType(ProtocolDataPacket packetReceived){
-        //tenim que crear ses llistes per guardar conexions de mvl i de pcs.
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
         int deviceType=(int)packetReceived.getObject(); 
@@ -163,22 +174,34 @@ public class Connection implements Runnable{
             //add a sa llista de connections de mvl
         } 
         else if (deviceType == PC){
-            //comprovar conexions de pcs que tenim, amem si en tenim cap de disponible
-            //tenir en compte que segons sa topologia podran se 2 o 4
-            //si tenim espai, afegir a llista, sino aturam conexio
+            validated=this.controller.availableConnections();
+            if (validated){
+            //add a sa llista de connections de pc
+            }
         }
         
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
         send(packet);
         
         if (!validated){
-            //aturam thread, afegim boolea a bucle i el modificam desde aqui
-            //podem emplear directament es boolea que tenim des bucle aqui dedins
-            //comentar amb joan
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                System.out.println("sleep processDeviceType: "+ex.getMessage());
+            }
+            this.cerrarSocket();
+            this.running=false;
         }
     }
     
-    
+    public void processValidation(ProtocolDataPacket packetReceived){
+        if ((boolean)packetReceived.getObject()){
+            //ficar conexio a llista pcs, ya que sempre sira pc s'altre banda(servidor)
+        } else {
+            this.cerrarSocket();
+            this.running=false;
+        }
+    }
     
     public void cerrarSocket(){
         try {
