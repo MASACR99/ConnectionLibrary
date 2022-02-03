@@ -8,9 +8,10 @@ package communications;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
- *
+ * TO DO: Check if we need to use public, private, default or protected for our methods
  * @author masa
  */
 public class CommunicationController {
@@ -28,6 +29,8 @@ public class CommunicationController {
     private ArrayList<Connection> pcConnections = new ArrayList<>();
     private ArrayList<Connection> mobileConnections = new ArrayList<>();
     private final int maxPc;
+    private ServerConnector serverConn;
+    private ClientConnector clientConn;
     
     public CommunicationController(){
         PORT = 42069;
@@ -66,6 +69,15 @@ public class CommunicationController {
             Connection conn = null;
             pcConnections.add(conn);
         }
+        
+        serverConn = new ServerConnector(this);
+        clientConn = new ClientConnector(this);
+        
+        Thread serverThread = new Thread(serverConn);
+        Thread clientThread = new Thread(clientConn);
+        
+        serverThread.start();
+        clientThread.start();
     }
     
     public boolean availableConnections(){
@@ -82,7 +94,7 @@ public class CommunicationController {
         return available;
     }
     
-    public void getSocket(Socket socket){
+    public void getServerSocket(Socket socket){
         try{
             Connection conn = new Connection(this, socket);
             conn.setConnectionType(SERVER);
@@ -91,6 +103,28 @@ public class CommunicationController {
         }catch(IOException ex){
             System.out.println("Problem creating a connection: " + ex.getMessage());
         }
+    }
+    
+    public void getClientSocket(Socket socket){
+        try{
+            Connection conn = new Connection(this, socket);
+            Thread thread = new Thread(conn);
+            thread.start();
+        }catch(IOException ex){
+            System.out.println("Problem creating a connection: " + ex.getMessage());
+        }
+    }
+    
+    public void connectToIp(String ip){
+        this.getClientSocket(clientConn.connect(ip, PORT));
+    }
+    
+    public ArrayList<Connection> getPcConnections(){
+        return this.pcConnections;
+    }
+    
+    public ArrayList<Connection> getMobileConnections(){
+        return this.mobileConnections;
     }
     
     public void addPcConnection(Connection conn){
@@ -111,11 +145,30 @@ public class CommunicationController {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws InterruptedException {
-        
         // TODO code application logic here
         // TODO crear classe controladora per tot es programa, e interficie perque
         // sigui aplicada a nes programa que empleara aquesta biblioteca per tal de sobrescrigui el metode, el cual
         //sera l'encarregat de rebre coses del comands del protocol creats per l'usuari
+        CommunicationController con = new CommunicationController();
+        Scanner input = new Scanner(System.in);
+        while(true){
+            System.out.println("Enter command: ");
+            System.out.println("1- Connect");
+            System.out.println("2- Chat");
+            switch(input.nextInt()){
+                case 1:
+                    System.out.println("Gib ip");
+                    input.nextLine();
+                    input.nextLine();
+                    break;
+                case 2:
+                    System.out.println("Not yet bookaroo");
+                    break;
+                default:
+                    System.out.println("You did an oopsie");
+                    break;
+            }
+        }
     }
     
 }

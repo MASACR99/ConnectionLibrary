@@ -7,7 +7,6 @@ package communications;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 
 /**
  *
@@ -17,12 +16,10 @@ public class ClientConnector implements Runnable{
     
     //TO DO: Check if actual implementation of PORT is valid for our application
     
-    private CommunicationController controller; 
-    private ArrayList <Connection> connectionsList;
+    private CommunicationController controller;
     
     public ClientConnector(CommunicationController controller) {
         this.controller = controller;
-        this.connectionsList = new ArrayList <>();
     }
     
     public Socket connect(String ip, int port){
@@ -45,10 +42,9 @@ public class ClientConnector implements Runnable{
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
-            for (int i=0;i<this.connectionsList.size();i++){
-                if (!this.connectionsList.get(i).isStatusOk()){
-
-                    this.tryToReconnect(this.connectionsList.get(i));
+            for (int i=0;i<controller.getPcConnections().size();i++){
+                if (controller.getPcConnections().get(i) != null && controller.getPcConnections().get(i).isStatusOk()){
+                    this.tryToReconnect(controller.getPcConnections().get(i));
                 }
             }
         }

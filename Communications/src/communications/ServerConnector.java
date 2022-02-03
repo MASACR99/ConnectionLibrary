@@ -40,7 +40,7 @@ public class ServerConnector implements Runnable{
                 
                 //TO DO: have to open a new connection for each one and have a 
                 //handshake before fully accepting the connection and saving it
-                controller.getSocket(serverSocket.accept());
+                controller.getServerSocket(serverSocket.accept());
             } catch (Exception e) {
                 System.out.println("server error");
                 e.printStackTrace();
