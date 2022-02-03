@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author masa
  */
-public class ProtocolDataPacket implements Serializable{
+public class ProtocolDataPacket implements Serializable{    
     //This will contain a full packet, this has the ability to be sent via
     //socket or be received and read.
     
