@@ -126,6 +126,7 @@ public class Connection implements Runnable{
                 }
                 Thread.sleep(50);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 System.out.println("run connection: "+ex.getMessage());
             }
         }

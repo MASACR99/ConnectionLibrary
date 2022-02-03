@@ -140,7 +140,7 @@ public class CommunicationController {
     private boolean sameConnection(Connection conn){
         boolean same = false;
         for(Connection con : this.pcConnections){
-            if(con.getConnectedMAC() == conn.getConnectedMAC()){
+            if(con.getConnectedMAC() != null && con.getConnectedMAC().equals(conn.getConnectedMAC())){
                 same = true;
                 break;
             }
