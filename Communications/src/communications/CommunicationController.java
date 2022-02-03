@@ -129,10 +129,23 @@ public class CommunicationController {
     
     public void addPcConnection(Connection conn){
         if(availableConnections()){
-            ServerHealth health = new ServerHealth(this,conn);
-            conn.setServerHealth(health);
-            pcConnections.add(conn);
+            if(!sameConnection(conn)){
+                ServerHealth health = new ServerHealth(this,conn);
+                conn.setServerHealth(health);
+                pcConnections.add(conn);
+            }
         }
+    }
+    
+    private boolean sameConnection(Connection conn){
+        boolean same = false;
+        for(Connection con : this.pcConnections){
+            if(con.getConnectedMAC() == conn.getConnectedMAC()){
+                same = true;
+                break;
+            }
+        }
+        return same;
     }
     
     public void addMobileConnection(Connection conn){
