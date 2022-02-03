@@ -43,7 +43,7 @@ public class ClientConnector implements Runnable{
                 System.out.println(ex.getMessage());
             }
             for (int i=0;i<controller.getPcConnections().size();i++){
-                if (controller.getPcConnections().get(i) != null && controller.getPcConnections().get(i).isStatusOk()){
+                if (controller.getPcConnections().get(i) != null && !controller.getPcConnections().get(i).isStatusOk()){
                     this.tryToReconnect(controller.getPcConnections().get(i));
                 }
             }

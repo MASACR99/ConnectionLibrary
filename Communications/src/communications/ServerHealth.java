@@ -48,7 +48,7 @@ public class ServerHealth implements Runnable{
     private void checkState(){
         if (this.connection.isStatusOk() && System.currentTimeMillis()-this.connection.getLastMessageReceived()>controller.SERVERHEALTHMAXWAIT){
             this.createTestMessage();
-            ProtocolDataPacket packet=new ProtocolDataPacket(connection.getLocalMAC(),connection.getConnectedMAC(),1,Integer.toString(this.checkCode));
+            ProtocolDataPacket packet=new ProtocolDataPacket(connection.getLocalMAC(),connection.getConnectedMAC(),1,this.checkCode);
             this.connection.send(packet);
             this.waitTestAnswer();
             

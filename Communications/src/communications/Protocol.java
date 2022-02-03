@@ -80,22 +80,27 @@ public class Protocol {
             if(packet.getId() <= 5){
                 switch (packet.getId()){
                     case 1:
+                        System.out.println("Received 1");
                         conn.answerTestRequest(packet);
                         break;
 
                     case 2: 
+                        System.out.println("Received 2");
                         conn.getServerHealth().checkTestAnswer(packet);
                         break;
 
                     case 3:
+                        System.out.println("Received 3");
                         conn.sendDeviceType(packet);
                         break;
 
                     case 4:
+                        System.out.println("Received 4");
                         conn.processDeviceType(packet);
                         break;
 
                     case 5:
+                        System.out.println("Received 5 with bool as: " + (boolean)packet.getObject());
                         conn.processValidation(packet);
                         break;
 
