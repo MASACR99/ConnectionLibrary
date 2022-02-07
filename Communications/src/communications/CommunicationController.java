@@ -173,6 +173,35 @@ public class CommunicationController {
         conn.setServerHealth(health);
         mobileConnections.add(conn);
     }
+    
+    /**
+     * TO DO: In the future we will have to add to the packet where has it come through
+     * so we will have to add our local mac to the packet, this can be done here
+     * or inside connection. This will also have to check for the shortest path
+     * to the target mac once the lookup tables are implemented.
+     * We will also probably have to check if the 
+     * @param conn
+     * @param packet 
+     */
+    void resend(Connection conn, ProtocolDataPacket packet){
+        boolean found = false;
+        for(Connection e : this.getPcConnections()){
+            if(e != conn){
+                if(e.getConnectedMAC() != null && e.getConnectedMAC().equals(packet.getTargetID())){
+                    e.send(packet);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if(!found){
+            for(Connection e : this.getPcConnections()){
+                if(e != conn){
+                    e.send(packet);
+                }
+            }
+        }
+    }
 
     /**
      * @param args the command line arguments

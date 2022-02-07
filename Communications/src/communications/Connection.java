@@ -119,12 +119,16 @@ class Connection implements Runnable{
         while (running){
             try{
                 if (this.statusOk){
-                    ProtocolDataPacket recibido=receive();
+                    ProtocolDataPacket received=receive();
                     //If the received packet id isn't one of the protocol
                     //and the target MAC is equals to ours
                     //we activate the connectionEvent
-                    if(!this.protocol.processMessage(this, recibido) && recibido.getTargetID().equals(localMAC)){
-                        initiater.connectionEvent(recibido);
+                    if(received.getTargetID() == null || received.getTargetID().equals(localMAC)){
+                        if(!this.protocol.processMessage(this, received)){
+                            initiater.connectionEvent(received);
+                        }
+                    }else{
+                        controller.resend(this,received);
                     }
                     lastMessageReceived=System.currentTimeMillis();
                 }
