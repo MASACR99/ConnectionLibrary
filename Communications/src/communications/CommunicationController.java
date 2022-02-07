@@ -32,6 +32,7 @@ public class CommunicationController {
     private ServerConnector serverConn;
     private ClientConnector clientConn;
     private ConnectionInterfaceInitiater initiater;
+    private String localMAC;
     
     /**
      * Empty constructor, starts port as 42069, healthwait 1500, ackwait = 2500
@@ -150,6 +151,21 @@ public class CommunicationController {
         this.getClientSocket(clientConn.connect(ip, PORT));
     }
     
+    public boolean sendMessage(ProtocolDataPacket packet){
+        return send(packet);
+    }
+    
+    private boolean send(ProtocolDataPacket packet){
+        boolean isValid = true;
+        if(packet.getId() > 6 && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
+            //send based on target id
+            resend(null, new ProtocolDataPacket(localMAC,packet.getTargetID(),packet.getId(),packet.getObject()));
+        }else{
+            isValid = false;
+        }
+        return isValid;
+    }
+    
     /**
      * Private getter of pcConnections
      * @return 
@@ -178,7 +194,7 @@ public class CommunicationController {
     void resend(Connection conn, ProtocolDataPacket packet){
         boolean found = false;
         for(Connection e : this.getPcConnections()){
-            if(e != conn){
+            if(e != null && e != conn){
                 if(e.getConnectedMAC() != null && e.getConnectedMAC().equals(packet.getTargetID())){
                     e.send(packet);
                     found = true;
@@ -188,7 +204,7 @@ public class CommunicationController {
         }
         if(!found){
             for(Connection e : this.getPcConnections()){
-                if(e != conn){
+                if(e != null && e != conn){
                     e.send(packet);
                 }
             }
