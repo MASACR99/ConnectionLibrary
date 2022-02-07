@@ -29,13 +29,13 @@ mes endevant:
 11- askLookup, a ne veinat
 
 */
-public class Protocol {
+class Protocol {
     
     private ArrayList<Integer> nonUsableIDs;
     private ArrayList<ProtocolDescription> protocolList;
     private final int lengthRequiredProtocol;
     
-    public Protocol(){
+    Protocol(){
         this.nonUsableIDs = new ArrayList<>();
         this.protocolList = new ArrayList <>();
         this.protocolList.add(new ProtocolDescription(1, "Socket test", "Integer"));
@@ -47,7 +47,7 @@ public class Protocol {
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
-    public boolean addCmd(int id, ProtocolDescription desc){
+    boolean addCmd(int id, ProtocolDescription desc){
         if(this.nonUsableIDs.add(id) && id > this.lengthRequiredProtocol){
             this.protocolList.add(desc);
             return true;
@@ -56,7 +56,7 @@ public class Protocol {
         }
     }
     
-    public ProtocolDescription getProtocol(int id){
+    ProtocolDescription getProtocol(int id){
         for(ProtocolDescription protocol : protocolList){
             if(protocol.getId() == id){
                 return protocol;
@@ -69,15 +69,15 @@ public class Protocol {
      * Returns the minimal id that can be used from the beginning.
      * @return Returns the minimal integer id that can be used from the beginning.
      */
-    public int getMinId(){
+    int getMinId(){
         return this.lengthRequiredProtocol;
     }
     
-    public ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
+    ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
     }
     
-    public boolean processMessage(Connection conn,ProtocolDataPacket packet){
+    boolean processMessage(Connection conn,ProtocolDataPacket packet){
         //TO DO: Talk. We need to check the target mac of the packet
         //though sometimes the packet will have a special protocol that will not have
         //a target MAC, so we must check this special cases.

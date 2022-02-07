@@ -12,7 +12,7 @@ import java.util.Random;
  *
  * @author PC
  */
-public class ServerHealth implements Runnable{
+class ServerHealth implements Runnable{
     
     private final Connection connection;
     private final CommunicationController controller;
@@ -20,16 +20,16 @@ public class ServerHealth implements Runnable{
     private boolean ACKwait;
     private int checkCode;
 
-    public ServerHealth(CommunicationController controller, Connection connection) {
+    ServerHealth(CommunicationController controller, Connection connection) {
         this.connection = connection;
         this.controller = controller;
     }
 
-    public int getLastTestCode() {
+    int getLastTestCode() {
         return checkCode;
     }
 
-    public void setTestRequestWaiting(boolean ACKwait) {
+    void setTestRequestWaiting(boolean ACKwait) {
         this.ACKwait = ACKwait;
     }
     
@@ -55,7 +55,7 @@ public class ServerHealth implements Runnable{
             if (ACKwait){
                 System.out.println("Socket is dead, restarting...");
                 this.connection.setStatusOk(false);
-                this.connection.cerrarSocket();
+                this.connection.closeSocket();
                 this.ACKwait=false;
             }
         }
@@ -82,7 +82,7 @@ public class ServerHealth implements Runnable{
         }
     }
     
-    public void checkTestAnswer(ProtocolDataPacket packet){
+    void checkTestAnswer(ProtocolDataPacket packet){
         if (((int)packet.getObject()) == checkCode){
             this.ACKwait=false;
         }

@@ -12,17 +12,17 @@ import java.net.Socket;
  *
  * @author PC
  */
-public class ClientConnector implements Runnable{
+class ClientConnector implements Runnable{
     
     //TO DO: Check if actual implementation of PORT is valid for our application
     
     private CommunicationController controller;
     
-    public ClientConnector(CommunicationController controller) {
+    ClientConnector(CommunicationController controller) {
         this.controller = controller;
     }
     
-    public Socket connect(String ip, int port){
+    Socket connect(String ip, int port){
         try {
             Socket socket=new Socket(ip,port);
             System.out.println("Connected");

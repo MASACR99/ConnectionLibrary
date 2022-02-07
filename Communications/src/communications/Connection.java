@@ -16,7 +16,7 @@ import java.net.Socket;
  *
  * @author PC
  */
-public class Connection implements Runnable{
+class Connection implements Runnable{
     
     private CommunicationController controller;
     private Protocol protocol;
@@ -34,7 +34,7 @@ public class Connection implements Runnable{
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
-    public Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
+    Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
         this.controller = controller;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
@@ -51,60 +51,60 @@ public class Connection implements Runnable{
         this.connectionType=CLIENT;
     }
     
-    public void setServerHealth(ServerHealth serverHealth) {
+    void setServerHealth(ServerHealth serverHealth) {
         this.serverHealth = serverHealth;
         Thread thread = new Thread(this.serverHealth);
         thread.start();
     }
 
-    public ServerHealth getServerHealth() {
+    ServerHealth getServerHealth() {
         return serverHealth;
     }
 
-    public String getConnectedMAC() {
+    String getConnectedMAC() {
         return connectedMAC;
     }
 
-    public void setConnectedMAC(String connectedMAC) {
+    void setConnectedMAC(String connectedMAC) {
         this.connectedMAC = connectedMAC;
     }
 
-    public void setConnectionType(int connectionType) {
+    void setConnectionType(int connectionType) {
         this.connectionType = connectionType;
     }
 
-    public String getLocalMAC() {
+    String getLocalMAC() {
         return localMAC;
     }
 
-    public void setLocalMAC(String localMAC) {
+    void setLocalMAC(String localMAC) {
         this.localMAC = localMAC;
     }
 
-    public long getLastMessageReceived() {
+    long getLastMessageReceived() {
         return lastMessageReceived;
     }
 
-    public InetAddress getIp() {
+    InetAddress getIp() {
         return ip;
     }
 
-    public boolean isStatusOk() {
+    boolean isStatusOk() {
         return statusOk;
     }
     
-    public void setStatusOk(boolean statusOk) {
+    void setStatusOk(boolean statusOk) {
         this.statusOk = statusOk;
     }
 
-    public void setSocket(Socket socket) throws IOException {
+    void setSocket(Socket socket) throws IOException {
         System.out.println("Openning socket...");
         this.socket = socket;
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
     }
 
-    public Socket getSocket() {
+    Socket getSocket() {
         return socket;
     }
     
@@ -135,7 +135,7 @@ public class Connection implements Runnable{
         }
     }
     
-    public synchronized void send(ProtocolDataPacket packet){
+    synchronized void send(ProtocolDataPacket packet){
         try {
             this.output.writeObject(packet);
         } catch (IOException ex) {
@@ -143,7 +143,7 @@ public class Connection implements Runnable{
         }
     }
     
-    public ProtocolDataPacket receive(){
+    private ProtocolDataPacket receive(){
         ProtocolDataPacket object=null;
         try {
             object = (ProtocolDataPacket)this.input.readObject();
@@ -155,23 +155,23 @@ public class Connection implements Runnable{
         return object;
     }
     
-    public void answerTestRequest(ProtocolDataPacket packetReceived){
+    void answerTestRequest(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,2,packetReceived.getObject());
         send(packet);
     }
     
-    public void askDeviceType(){
+    void askDeviceType(){
         ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,null,3,null);
         send(packet);
     }
     
-    public void sendDeviceType(ProtocolDataPacket packetReceived){
+    void sendDeviceType(ProtocolDataPacket packetReceived){
         this.connectedMAC = (String) packetReceived.getSourceID();
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,4,PC);
         send(packet);
     }
     
-    public void processDeviceType(ProtocolDataPacket packetReceived){
+    void processDeviceType(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet;
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
@@ -197,7 +197,7 @@ public class Connection implements Runnable{
             } catch (InterruptedException ex) {
                 System.out.println("sleep processDeviceType: "+ex.getMessage());
             }
-            this.cerrarSocket();
+            this.closeSocket();
             this.running=false;
         }
     }
@@ -209,16 +209,16 @@ public class Connection implements Runnable{
      * be validated.
      * @param packetReceived This is the last packet received from the starting handshake. 
      */
-    public void processValidation(ProtocolDataPacket packetReceived){
+    void processValidation(ProtocolDataPacket packetReceived){
         if ((boolean)packetReceived.getObject()){
             this.controller.addPcConnection(this);
         } else {
-            this.cerrarSocket();
+            this.closeSocket();
             this.running=false;
         }
     }
     
-    public void notifyClousure(){
+    void notifyClousure(){
         ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,null);
         this.send(packet);
         try {
@@ -226,17 +226,23 @@ public class Connection implements Runnable{
         } catch (InterruptedException ex) {
             System.out.println("sleep processDeviceType: "+ex.getMessage());
         }
-        this.cerrarSocket();
+        this.closeSocket();
         this.running=false;
     }
     
-    public void processClousure(){
+    /**
+     * Only used by Protocol to close a connection when notified
+     */
+    void processClousure(){
         this.controller.nullifyConnection(this);
-        this.cerrarSocket();
+        this.closeSocket();
         this.running=false;
     }
     
-    public void cerrarSocket(){
+    /**
+     * Called to fully close a socket
+     */
+    void closeSocket(){
         try {
             System.out.println("Closing sockets");
             this.socket.close();
@@ -247,5 +253,4 @@ public class Connection implements Runnable{
             System.out.println("Error closing sockets: "+ex.getMessage());
         }
     }
-    
 }

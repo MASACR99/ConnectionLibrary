@@ -9,26 +9,26 @@ package communications;
  *
  * @author masa
  */
-public class ProtocolDescription {
+class ProtocolDescription {
     private final int id;
     private final String description;
     private final String expectedReturn;
     
-    public ProtocolDescription(int id, String description, String expectedReturn){
+    ProtocolDescription(int id, String description, String expectedReturn){
         this.id = id;
         this.description = description;
         this.expectedReturn = expectedReturn;
     }
 
-    public int getId() {
+    int getId() {
         return id;
     }
 
-    public String getDescription() {
+    String getDescription() {
         return description;
     }
     
-    public String getExpectedReturn() {
+    String getExpectedReturn() {
         return expectedReturn;
     }    
 }

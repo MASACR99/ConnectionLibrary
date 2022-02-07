@@ -11,14 +11,14 @@ import java.util.ArrayList;
  *
  * @author masa
  */
-public class ConnectionInterfaceInitiater {
+class ConnectionInterfaceInitiater {
     private ArrayList<ConnectionInterface> listeners = new ArrayList<>();
     
-    public void addListener(ConnectionInterface methodToAdd){
+    void addListener(ConnectionInterface methodToAdd){
         listeners.add(methodToAdd);
     }
     
-    public void connectionEvent(ProtocolDataPacket packet){
+    void connectionEvent(ProtocolDataPacket packet){
         for(ConnectionInterface conn : listeners){
             conn.onMessageReceived(packet);
         }

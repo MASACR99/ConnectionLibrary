@@ -85,7 +85,7 @@ public class CommunicationController {
     
     /**
      * Adds a ConnectionInterface to the initiater to be called
- as an event when a packet is received.
+     * as an event when a packet is received.
      * @param conn A class implementing ConnectionInterface
      */
     public void addOnPacketListener(ConnectionInterface conn){

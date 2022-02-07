@@ -13,19 +13,19 @@ import java.net.ServerSocket;
  *
  * @author masa
  */
-public class ServerConnector implements Runnable{
+class ServerConnector implements Runnable{
     
     //This class waits for external connections, when one is received it checks
     //if there's an empty connection and fills it with the data
     private CommunicationController controller;
     
-    public ServerConnector(CommunicationController control){
+    ServerConnector(CommunicationController control){
         controller = control;
     }
     
     private ServerSocket serverSocket;
 
-    public void connect() {
+    void connect() {
         try{
             serverSocket = new ServerSocket(controller.PORT);
         }catch(Exception ex){
@@ -48,7 +48,7 @@ public class ServerConnector implements Runnable{
         }
     }
     
-    public String getMac(){
+    String getMac(){
         //This gets the first MAC it finds. We may need to check which MAC we get.
         try{
             InetAddress localHost = InetAddress.getLocalHost();
