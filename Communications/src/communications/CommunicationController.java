@@ -31,6 +31,7 @@ public class CommunicationController {
     private final int maxPc;
     private ServerConnector serverConn;
     private ClientConnector clientConn;
+    private ConnectionInterfaceInitiater initiater;
     
     public CommunicationController(){
         PORT = 42069;
@@ -70,6 +71,8 @@ public class CommunicationController {
             pcConnections.add(conn);
         }
         
+        initiater = new ConnectionInterfaceInitiater();
+        
         serverConn = new ServerConnector(this);
         clientConn = new ClientConnector(this);
         
@@ -78,6 +81,15 @@ public class CommunicationController {
         
         serverThread.start();
         clientThread.start();
+    }
+    
+    /**
+     * Adds a ConnectionInterface to the initiater to be called
+ as an event when a packet is received.
+     * @param conn A class implementing ConnectionInterface
+     */
+    public void addOnPacketListener(ConnectionInterface conn){
+        initiater.addListener(conn);
     }
     
     public boolean availableConnections(){
@@ -96,7 +108,7 @@ public class CommunicationController {
     
     public void getServerSocket(Socket socket){
         try{
-            Connection conn = new Connection(this, socket);
+            Connection conn = new Connection(this, socket,initiater);
             conn.setConnectionType(SERVER);
             Thread thread = new Thread(conn);
             thread.start();
@@ -107,7 +119,7 @@ public class CommunicationController {
     
     public void getClientSocket(Socket socket){
         try{
-            Connection conn = new Connection(this, socket);
+            Connection conn = new Connection(this, socket,initiater);
             Thread thread = new Thread(conn);
             thread.start();
         }catch(IOException ex){

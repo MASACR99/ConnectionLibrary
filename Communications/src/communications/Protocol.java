@@ -78,8 +78,11 @@ public class Protocol {
     }
     
     public boolean processMessage(Connection conn,ProtocolDataPacket packet){
+        //TO DO: Talk. We need to check the target mac of the packet
+        //though sometimes the packet will have a special protocol that will not have
+        //a target MAC, so we must check this special cases.
         if (packet!=null){
-            if(packet.getId() <= 5){
+            if(packet.getId() <= 6){
                 switch (packet.getId()){
                     case 1:
                         conn.answerTestRequest(packet);
@@ -105,6 +108,8 @@ public class Protocol {
                         conn.processClousure();
 
                     default:
+                        //Default isn't really needed, it's just used
+                        //to make really sure we don't check "rogue" packets
                         return false;
                 }
             }else{

@@ -29,11 +29,12 @@ public class Connection implements Runnable{
     private String localMAC;
     private int connectionType;
     private boolean running;
+    private ConnectionInterfaceInitiater initiater;
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
-    public Connection(CommunicationController controller, Socket socket) throws IOException {
+    public Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
         this.controller = controller;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
@@ -43,6 +44,7 @@ public class Connection implements Runnable{
         this.statusOk=true;
         this.lastMessageReceived = System.currentTimeMillis();
         this.serverHealth = new ServerHealth(controller, this);
+        this.initiater = initiater;
         //comença amb 0 ja que sino li feim es setter per cambiar valor a tipus
         //de conexio, instanciat pes seervidor o pes client, farem que simplement
         //sigui tractat com una conexio de ses "antigues"
@@ -117,8 +119,13 @@ public class Connection implements Runnable{
         while (running){
             try{
                 if (this.statusOk){
-                    ProtocolDataPacket recibido=recive();
-                    this.protocol.processMessage(this, recibido);
+                    ProtocolDataPacket recibido=receive();
+                    //If the received packet id isn't one of the protocol
+                    //and the target MAC is equals to ours
+                    //we activate the connectionEvent
+                    if(!this.protocol.processMessage(this, recibido) && recibido.getTargetID().equals(localMAC)){
+                        initiater.connectionEvent(recibido);
+                    }
                     lastMessageReceived=System.currentTimeMillis();
                 }
                 Thread.sleep(50);
@@ -136,7 +143,7 @@ public class Connection implements Runnable{
         }
     }
     
-    public ProtocolDataPacket recive(){
+    public ProtocolDataPacket receive(){
         ProtocolDataPacket object=null;
         try {
             object = (ProtocolDataPacket)this.input.readObject();
@@ -210,7 +217,6 @@ public class Connection implements Runnable{
             this.running=false;
         }
     }
-    
     
     public void notifyClousure(){
         ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,null);
