@@ -151,10 +151,22 @@ public class CommunicationController {
         this.getClientSocket(clientConn.connect(ip, PORT));
     }
     
+    /**
+     * Sends this message via the fastest available path. Also checks if the packet
+     * is valid.
+     * @param packet Packet to be sent
+     * @return True if packet is valid and sent, else false
+     */
     public boolean sendMessage(ProtocolDataPacket packet){
         return send(packet);
     }
     
+    /**
+     * Checks if the packet is valid and also sends it to resend to send it via the fastest path available.
+     * Also overrides the packet source MAC to use this one
+     * @param packet A packet to be checked and sent
+     * @return True if packet is valid, else false
+     */
     private boolean send(ProtocolDataPacket packet){
         boolean isValid = true;
         if(packet.getId() > 6 && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){

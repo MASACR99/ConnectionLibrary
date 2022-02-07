@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author masa
  */
-class ProtocolDataPacket implements Serializable{    
+public class ProtocolDataPacket implements Serializable{    
     //This will contain a full packet, this has the ability to be sent via
     //socket or be received and read.
     
@@ -20,26 +20,26 @@ class ProtocolDataPacket implements Serializable{
     private final int id;
     private final Object object;
     
-    ProtocolDataPacket(String source, String target, int id, Object obj){
+    public ProtocolDataPacket(String source, String target, int id, Object obj){
         this.sourceID = source;
         this.targetID = target;
         this.id = id;
         this.object = obj;
     }
 
-    String getSourceID() {
+    public String getSourceID() {
         return sourceID;
     }
 
-    String getTargetID() {
+    public String getTargetID() {
         return targetID;
     }
 
-    int getId() {
+    public int getId() {
         return id;
     }
 
-    Object getObject() {
+    public Object getObject() {
         return object;
     }
 
