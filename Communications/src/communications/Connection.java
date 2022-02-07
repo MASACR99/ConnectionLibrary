@@ -96,7 +96,12 @@ class Connection implements Runnable{
     void setStatusOk(boolean statusOk) {
         this.statusOk = statusOk;
     }
-
+    
+    /**
+     * Set the socket and opens the two streams of the class.
+     * @param socket to be setted
+     * @throws IOException
+     */
     void setSocket(Socket socket) throws IOException {
         System.out.println("Openning socket...");
         this.socket = socket;
@@ -139,6 +144,11 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Send the ProtocolDataPacked recvied in the paramether throught the 
+     * ObjectOutputStream.
+     * @param packet ProtocolDataPacked to be send.
+     */
     synchronized void send(ProtocolDataPacket packet){
         try {
             this.output.writeObject(packet);
@@ -147,6 +157,12 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Waits for a object to be recived throught the ObjectInputStream. If there 
+     * is an error reciving the packet the statusOk is setted to false and the 
+     * testRequestWaiting
+     * @return object that is the packet recived
+     */
     private ProtocolDataPacket receive(){
         ProtocolDataPacket object=null;
         try {
@@ -159,22 +175,45 @@ class Connection implements Runnable{
         return object;
     }
     
+    /**
+     * Answer the request to know if this connection is still aveilable.
+     * It has to resend the recived code in the object.
+     * @param packetReceived packet where there is the request and the code that 
+     * has to be resend.
+     */
     void answerTestRequest(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,2,packetReceived.getObject());
         send(packet);
     }
     
+    /**
+     * Send a protocolDataPacket to ask the device type of the connected 
+     * device.
+     */
     void askDeviceType(){
         ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,null,3,null);
         send(packet);
     }
     
+    /**
+     * Send the device type of this device to the other side of the socket. 
+     * 
+     * @param packetReceived packet that ask the device type
+     */
     void sendDeviceType(ProtocolDataPacket packetReceived){
         this.connectedMAC = (String) packetReceived.getSourceID();
         ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,4,PC);
         send(packet);
     }
     
+    /**
+     * Process if the connected device is a movile phone or a pc. If it's a pc  
+     * the method checks if the controller can have another connection. If there 
+     * isn't space the connection is rejected, otherwise is accepted. The method 
+     * notify if the connection is accepted or not to the other side.
+     * 
+     * @param packetReceived the last packet recived with the device type
+     */
     void processDeviceType(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet;
         this.connectedMAC = (String) packetReceived.getSourceID();
@@ -222,6 +261,11 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Notify to the other side of the socket that this connection is going to be
+     * closed and this socket don't want to reconect. After that and after a wait
+     * of 1 second this connections closes.
+     */
     void notifyClousure(){
         ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,null);
         this.send(packet);
