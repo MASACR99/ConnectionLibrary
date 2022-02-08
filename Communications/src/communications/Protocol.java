@@ -27,6 +27,7 @@ mes endevant:
 9- ask aveilable, s'intenten conectar, si no tens puesto demenaras a tots es veinats amem si colcu en te (retorna null o innetAddress)
 10- ChangePositions
 11- askLookup, a ne veinat
+12- traceRoute, anvia una arraylist amb sa teva mac i per cada pc que pasi s'anira afegint sa seva mac a sarraylist a index 0.
 
 */
 class Protocol {
@@ -44,6 +45,7 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
         this.protocolList.add(new ProtocolDescription(5, "Validate connection", "Boolean"));
         this.protocolList.add(new ProtocolDescription(6, "Close connection", "Null"));
+        this.protocolList.add(new ProtocolDescription(7, "Traceroute", "ArrayList <String>"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
@@ -106,6 +108,11 @@ class Protocol {
                         
                     case 6:
                         conn.processClousure();
+                        break;
+                        
+                    case 7:
+                        conn.addMacTraceroute(packet);
+                        break;
 
                     default:
                         //Default isn't really needed, it's just used
