@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -62,6 +63,20 @@ class Connection implements Runnable{
                     lookup.replace(str, neighbourMap.get(str)+1);
                 }
             }
+        }
+    }
+    
+    void addToLookup(ArrayList <String> macPath){
+        int counter=1;
+        for(String str : macPath){
+            if(!lookup.containsKey(str)){
+                lookup.put(str, counter);
+            }else{
+                if(lookup.get(str) > counter){
+                    lookup.replace(str, counter);
+                }
+            }
+            counter++;
         }
     }
     
@@ -161,7 +176,12 @@ class Connection implements Runnable{
                             initiater.connectionEvent(received);
                         }
                     }else{
-                        controller.resend(this,received);
+                        if (received.getId()==7){
+                            this.protocol.processMessage(this, received);
+                        }
+                        else {
+                            controller.resend(this,received);
+                        }
                     }
                     lastMessageReceived=System.currentTimeMillis();
                 }
@@ -327,6 +347,23 @@ class Connection implements Runnable{
             this.socket = null;
         } catch (IOException ex) {
             System.out.println("Error closing sockets: "+ex.getMessage());
+        }
+    }
+    
+    void sendTraceroute(String targetId){
+        ArrayList macPath=new ArrayList<>();
+        macPath.add(this.localMAC);
+        this.send(new ProtocolDataPacket(this.localMAC,targetId,7,macPath));
+    }
+    
+    void addMacTraceroute(ProtocolDataPacket packetReceived){
+        if (packetReceived.getSourceID().equals(this.localMAC)){
+            this.addToLookup((ArrayList)packetReceived.getObject());
+        }
+        else {
+            ArrayList <String> macPath=(ArrayList)packetReceived.getObject();
+            macPath.add(0,this.localMAC);
+            this.send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,macPath));
         }
     }
 }
