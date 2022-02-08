@@ -371,7 +371,7 @@ public class CommunicationController {
      */
     void nullifyConnection(Connection conn){
         for(int i=0; i<this.pcConnections.size(); i++){
-            if(this.pcConnections.get(i).equals(conn)){
+            if(this.pcConnections!=null && this.pcConnections.get(i).equals(conn)){
                 this.pcConnections.set(i, null);
             }
         }

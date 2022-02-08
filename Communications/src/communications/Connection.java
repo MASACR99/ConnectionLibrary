@@ -261,8 +261,9 @@ class Connection implements Runnable{
     /**
      * Process if the connected device is a mobile phone or a pc. If it's a pc  
      * the method checks if the controller can have another connection. If there 
-     * isn't space the connection is rejected, otherwise is accepted. The method 
-     * notify if the connection is accepted or not to the other side.
+     * isn't space the connection is rejected, otherwise is accepted. Then the 
+     * method send its lookup table if the connection is accepted or a false 
+     * boolean if the connection is rejected.
      * 
      * @param packetReceived the last packet received with the device type
      */
@@ -273,27 +274,31 @@ class Connection implements Runnable{
         int deviceType=(int)packetReceived.getObject(); 
         if (deviceType == MVL){
             validated = true;
-            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
+            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
-            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,validated);
-            send(packet);
             if (validated){
+                packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,this.controller.joinMaps());
+                send(packet);
                 this.controller.addPcConnection(this);
             }
         }
         
         if (!validated){
             try {
+                packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,7,false);
+                send(packet);
                 Thread.sleep(1000);
-            } catch (InterruptedException ex) {
+                this.closeSocket();
+                this.running=false;
+            } catch(Exception ex){
                 System.out.println("sleep processDeviceType: "+ex.getMessage());
+                this.closeSocket();
+                this.running=false;
             }
-            this.closeSocket();
-            this.running=false;
         }
     }
     
@@ -319,7 +324,7 @@ class Connection implements Runnable{
      * of 1 second this connections closes.
      */
     void notifyClousure(){
-        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,null);
+        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,8,null);
         this.send(packet);
         try {
             Thread.sleep(1000);
@@ -357,7 +362,7 @@ class Connection implements Runnable{
     void sendTraceroute(String targetId){
         ArrayList macPath=new ArrayList<>();
         macPath.add(this.localMAC);
-        this.send(new ProtocolDataPacket(this.localMAC,targetId,7,macPath));
+        this.send(new ProtocolDataPacket(this.localMAC,targetId,9,macPath));
     }
     
     void addMacTraceroute(ProtocolDataPacket packetReceived){
@@ -367,7 +372,17 @@ class Connection implements Runnable{
         else {
             ArrayList <String> macPath=(ArrayList)packetReceived.getObject();
             macPath.add(0,this.localMAC);
-            this.send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,macPath));
+            this.send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),9,macPath));
         }
+    }
+    
+    void receiveLookupTable(ProtocolDataPacket packetReceived){
+        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
+        this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,this.controller.joinMaps()));
+    }
+    
+    void receiveLookupTable2(ProtocolDataPacket packetReceived){
+        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
+        send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
     }
 }
