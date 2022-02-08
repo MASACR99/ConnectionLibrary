@@ -8,6 +8,7 @@ package communications;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -230,6 +231,26 @@ public class CommunicationController {
         if(!found){
             leastJumps.send(packet);
         }
+    }
+    
+    HashMap<String, Integer> joinMaps(){
+        HashMap<String,Integer> map = new HashMap<>();
+        HashMap<String,Integer> pointerMap = new HashMap<>();
+        for(Connection e : this.getPcConnections()){
+            if(e != null){
+                pointerMap = e.getLookup();
+                for(String macs : pointerMap.keySet()){
+                    if(!map.containsKey(macs)){
+                        map.put(macs, e.getJumpsTo(macs));
+                    }else{
+                        if(map.get(macs) > e.getJumpsTo(macs)){
+                            map.replace(macs, e.getJumpsTo(macs));
+                        }
+                    }
+                }
+            }
+        }
+        return map;
     }
 
     /**

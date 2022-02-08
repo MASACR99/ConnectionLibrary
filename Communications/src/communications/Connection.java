@@ -79,6 +79,10 @@ class Connection implements Runnable{
         }
     }
     
+    HashMap<String,Integer> getLookup(){
+        return lookup;
+    }
+    
     void setServerHealth(ServerHealth serverHealth) {
         this.serverHealth = serverHealth;
         Thread thread = new Thread(this.serverHealth);
