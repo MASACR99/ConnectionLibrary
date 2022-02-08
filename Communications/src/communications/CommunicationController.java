@@ -205,21 +205,30 @@ public class CommunicationController {
      */
     void resend(Connection conn, ProtocolDataPacket packet){
         boolean found = false;
+        Connection leastJumps = null;
+        int minJumps = -1;
+        int aux;
         for(Connection e : this.getPcConnections()){
             if(e != null && e != conn){
-                if(e.getConnectedMAC() != null && e.getConnectedMAC().equals(packet.getTargetID())){
-                    e.send(packet);
-                    found = true;
-                    break;
+                if(e.getConnectedMAC() != null){
+                    aux = e.getJumpsTo(packet.getTargetID());
+                    if(aux != -1){
+                        if(aux == 1){
+                            e.send(packet);
+                            found = true;
+                            break;
+                        }else{
+                            if(minJumps == -1 || aux < minJumps){
+                                leastJumps = e;
+                                minJumps = aux;
+                            }
+                        }
+                    }
                 }
             }
         }
         if(!found){
-            for(Connection e : this.getPcConnections()){
-                if(e != null && e != conn){
-                    e.send(packet);
-                }
-            }
+            leastJumps.send(packet);
         }
     }
 

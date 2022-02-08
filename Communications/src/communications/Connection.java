@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  *
@@ -30,6 +31,7 @@ class Connection implements Runnable{
     private int connectionType;
     private boolean running;
     private ConnectionInterfaceInitiater initiater;
+    private HashMap<String, Integer> lookup= new HashMap<>();
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -49,6 +51,32 @@ class Connection implements Runnable{
         //de conexio, instanciat pes seervidor o pes client, farem que simplement
         //sigui tractat com una conexio de ses "antigues"
         this.connectionType=CLIENT;
+    }
+    
+    void addToLookup(HashMap<String,Integer> neighbourMap){
+        for(String str : neighbourMap.keySet()){
+            if(!lookup.containsKey(str)){
+                lookup.put(str, neighbourMap.get(str)+1);
+            }else{
+                if(lookup.get(str) > (neighbourMap.get(str)+1)){
+                    lookup.replace(str, neighbourMap.get(str)+1);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Returns the number of jumps to a mac address based on the lookup table
+     * Returns -1 if that MAC doesn't exist in the table
+     * @param mac String with the MAC address to get the jumps to
+     * @return Number of jumps if any, else -1
+     */
+    int getJumpsTo(String mac){
+        if(lookup.containsKey(mac)){
+            return lookup.get(mac);
+        }else{
+            return -1;
+        }
     }
     
     void setServerHealth(ServerHealth serverHealth) {
