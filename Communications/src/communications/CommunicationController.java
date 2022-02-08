@@ -230,7 +230,7 @@ public class CommunicationController {
         }
         if(!found){
             leastJumps.send(packet);
-        }
+        }//TO DO: Decide what to do if there's no path
     }
     
     /**
@@ -254,6 +254,7 @@ public class CommunicationController {
                 }
             }
         }
+        map.put(localMAC, 0);
         return map;
     }
 

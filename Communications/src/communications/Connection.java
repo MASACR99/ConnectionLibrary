@@ -259,12 +259,12 @@ class Connection implements Runnable{
     }
     
     /**
-     * Process if the connected device is a movile phone or a pc. If it's a pc  
+     * Process if the connected device is a mobile phone or a pc. If it's a pc  
      * the method checks if the controller can have another connection. If there 
      * isn't space the connection is rejected, otherwise is accepted. The method 
      * notify if the connection is accepted or not to the other side.
      * 
-     * @param packetReceived the last packet recived with the device type
+     * @param packetReceived the last packet received with the device type
      */
     void processDeviceType(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet;
