@@ -233,6 +233,10 @@ public class CommunicationController {
         }
     }
     
+    /**
+     * Joins the lookup tables of the pc connections into 1
+     * @return Big lookup table of all the connections
+     */
     HashMap<String, Integer> joinMaps(){
         HashMap<String,Integer> map = new HashMap<>();
         HashMap<String,Integer> pointerMap = new HashMap<>();
