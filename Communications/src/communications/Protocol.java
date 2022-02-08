@@ -43,6 +43,10 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(2, "Socket test ACK", "Integer"));
         this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "Null"));
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
+        this.protocolList.add(new ProtocolDescription(5, "Receive Lookup Table", "Hashmap<String,Integer>"));
+        this.protocolList.add(new ProtocolDescription(5, "Receive Lookup Table2", "Hashmap<String,Integer>"));
+        //antes de validar pasa lookup tables
+        //conectedMac pasarles a sa lookup quan s'obri sa conexio
         this.protocolList.add(new ProtocolDescription(5, "Validate connection", "Boolean"));
         this.protocolList.add(new ProtocolDescription(6, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(7, "Traceroute", "ArrayList <String>"));
@@ -101,16 +105,24 @@ class Protocol {
                     case 4:
                         conn.processDeviceType(packet);
                         break;
-
-                    case 5:
-                        conn.processValidation(packet);
-                        break;
                         
+                    case 5:
+                        conn.receiveLookupTable(packet);
+                        break;
+
                     case 6:
-                        conn.processClousure();
+                        conn.receiveLookupTable2(packet);
                         break;
                         
                     case 7:
+                        conn.processValidation(packet);
+                        break;
+                        
+                    case 8:
+                        conn.processClousure();
+                        break;
+                        
+                    case 9:
                         conn.addMacTraceroute(packet);
                         break;
 
