@@ -292,11 +292,15 @@ class Connection implements Runnable{
         
         if (!validated){
             try {
-                packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,7,false);
+                //First we get the hashmap with the macs and the connections to get to those
+                this.getConnectedMAC();
+                //Then we start asking our first neighbour
+                this.askIpNextMac();
+                /*packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,7,false);
                 send(packet);
                 Thread.sleep(1000);
                 this.closeSocket();
-                this.running=false;
+                this.running=false;*/
             } catch(Exception ex){
                 System.out.println("sleep processDeviceType: "+ex.getMessage());
                 this.closeSocket();
@@ -401,6 +405,7 @@ class Connection implements Runnable{
         for(String mac : this.connectedMap.keySet()){
             if(this.lastTestedMac == null || lastCycle){
                 aux = true;
+                lastTestedMac = mac;
                 controller.resend(this,new ProtocolDataPacket(this.localMAC,mac,11,null));
                 break;
             }else if(this.lastTestedMac == mac){
