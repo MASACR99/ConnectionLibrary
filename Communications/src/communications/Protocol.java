@@ -44,12 +44,15 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(3, "Acknowledge device type", "Null"));
         this.protocolList.add(new ProtocolDescription(4, "Return device type", "Integer"));
         this.protocolList.add(new ProtocolDescription(5, "Receive Lookup Table", "Hashmap<String,Integer>"));
-        this.protocolList.add(new ProtocolDescription(5, "Receive Lookup Table2", "Hashmap<String,Integer>"));
+        this.protocolList.add(new ProtocolDescription(6, "Receive Lookup Table2", "Hashmap<String,Integer>"));
         //antes de validar pasa lookup tables
         //conectedMac pasarles a sa lookup quan s'obri sa conexio
-        this.protocolList.add(new ProtocolDescription(5, "Validate connection", "Boolean"));
-        this.protocolList.add(new ProtocolDescription(6, "Close connection", "Null"));
-        this.protocolList.add(new ProtocolDescription(7, "Traceroute", "ArrayList <String>"));
+        this.protocolList.add(new ProtocolDescription(7, "Validate connection", "Boolean"));
+        this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
+        this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
+        this.protocolList.add(new ProtocolDescription(10, "Available Connections", "Null"));
+        this.protocolList.add(new ProtocolDescription(11, "Process IP asker", "Boolean false or String IP"));
+        this.protocolList.add(new ProtocolDescription(12, "Recevie new IP", "String"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
@@ -125,7 +128,27 @@ class Protocol {
                     case 9:
                         conn.addMacTraceroute(packet);
                         break;
+                        
+                    case 10:
+                        //connection asks to controller if it has available connections
+                        //returns an 11 with a boolean
+                        conn.availableConnections(packet);
+                        break;
+                        
+                    case 11:
+                        //connection receives a boolean on true it sends the IP to the
+                        //connected peer with number 12, on false, tries next mac,
+                        //if no more macs are available to ask too just closeConnection
+                        //with 8
+                        conn.processIpAsker(packet);
+                        break;
 
+                    case 12:
+                        //We found a valid ip address to reconnect to, so connection
+                        //can add that as a new socket and close the connection after
+                        conn.receiveNewIp(packet);
+                        break;
+                        
                     default:
                         //Default isn't really needed, it's just used
                         //to make really sure we don't check "rogue" packets

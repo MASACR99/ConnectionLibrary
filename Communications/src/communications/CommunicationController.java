@@ -376,4 +376,23 @@ public class CommunicationController {
             }
         }
     }
+    
+    /**
+     * Creates a new HashMap based on the joined map where every mac has the connection
+     * with the fastest path to a mac address.
+     * @param joinedMap HashMap of all lookup tables joined with the fastest paths
+     * @return A HashMap with the fastest connection for a given mac address
+     */
+    HashMap connectMaps(HashMap<String, Integer> joinedMap){
+        HashMap<String, Connection> returnMap = new HashMap();
+        for(String str : joinedMap.keySet()){
+            for(Connection e : this.pcConnections){
+                if(e.getLookup().containsKey(str) && e.getLookup().get(str) == joinedMap.get(str)){
+                    returnMap.put(str, e);
+                    break;
+                }
+            }
+        }
+        return returnMap;
+    }
 }

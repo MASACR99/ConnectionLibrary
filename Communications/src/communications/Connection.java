@@ -36,7 +36,10 @@ class Connection implements Runnable{
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
-
+    
+    private HashMap<String, Connection> connectedMap = null; //Only used on connections that must ask to other mac addresses if they have available connections
+    private String lastTestedMac = null; //Same as above
+    
     Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
         this.controller = controller;
         this.socket = socket;
@@ -384,5 +387,72 @@ class Connection implements Runnable{
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
         send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
+    }
+    
+    private HashMap getConnectedMap(){
+        return controller.connectMaps(controller.joinMaps());
+    }
+    
+    private void askIpNextMac(){
+        boolean aux = false;
+        boolean lastCycle = false; 
+        //Used to trigger the for to send a message on the next cycle
+        //unless it's out last cycle
+        for(String mac : this.connectedMap.keySet()){
+            if(this.lastTestedMac == null || lastCycle){
+                aux = true;
+                controller.resend(this,new ProtocolDataPacket(this.localMAC,mac,11,null));
+                break;
+            }else if(this.lastTestedMac == mac){
+                lastCycle = true;
+            }
+        }
+        //If we go through all the for each without sending a message close the connection
+        if(!aux){
+            this.notifyClousure();
+        }
+    }
+    
+    /**
+     * Asks the controller if there's space for more connections and returns
+     * the boolean in a message of protocol 11
+     * @param packet Received ProtocolDataPacket
+     */
+    void availableConnections(ProtocolDataPacket packet){
+        if(controller.availableConnections()){
+            this.send(new ProtocolDataPacket(this.localMAC,packet.getSourceID(),11,socket.getInetAddress().toString()));
+        }else{
+            this.send(new ProtocolDataPacket(this.localMAC,packet.getSourceID(),11,false));
+        }
+    }
+    
+    /**
+     * Keeps asking neighboring mac if there's space until one responds true or
+     * we get to the end of the map.
+     * @param packet Received ProtocolDataPacket
+     */
+    void processIpAsker(ProtocolDataPacket packet){
+        try{
+            if(!(boolean)packet.getObject()){
+                askIpNextMac();
+            }
+        }catch(Exception ex){
+            System.out.println("Found a valid IP to connect to");
+            try{
+                this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,12,(String)packet.getObject()));
+            }catch(Exception e){
+                System.out.println("Legit error in processIpAsker: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Connects to the given IP to start a new handshake and sends a message to close
+     * the actual connection
+     * @param ip String IP to connect to
+     */
+    void receiveNewIp(ProtocolDataPacket packet){
+        controller.connectToIp((String)packet.getObject());
+        this.notifyClousure();
     }
 }
