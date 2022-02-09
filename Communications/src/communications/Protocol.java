@@ -51,7 +51,7 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
         this.protocolList.add(new ProtocolDescription(10, "Available Connections", "Null"));
-        this.protocolList.add(new ProtocolDescription(11, "Process IP asker", "Boolean false or String IP"));
+        this.protocolList.add(new ProtocolDescription(11, "Process IP asker", "String"));
         this.protocolList.add(new ProtocolDescription(12, "Recevie new IP", "String"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }

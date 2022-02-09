@@ -437,17 +437,11 @@ class Connection implements Runnable{
      * @param packet Received ProtocolDataPacket
      */
     void processIpAsker(ProtocolDataPacket packet){
-        try{
-            if(!(boolean)packet.getObject()){
-                askIpNextMac();
-            }
-        }catch(Exception ex){
-            System.out.println("Found a valid IP to connect to");
-            try{
-                this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,12,(String)packet.getObject()));
-            }catch(Exception e){
-                System.out.println("Legit error in processIpAsker: " + e.getMessage());
-            }
+        //TO DO: Check if this if is correct
+        if((String)packet.getObject() == null){
+            askIpNextMac();
+        }else{
+            this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,12,(String)packet.getObject()));
         }
     }
     
