@@ -149,7 +149,7 @@ public class CommunicationController {
      * @return True if packet is valid and sent, else false
      */
     public boolean sendMessage(ProtocolDataPacket packet){
-        return send(packet);
+        return checkPacket(packet);
     }
     
     /**
@@ -158,11 +158,11 @@ public class CommunicationController {
      * @param packet A packet to be checked and sent
      * @return True if packet is valid, else false
      */
-    private boolean send(ProtocolDataPacket packet){
+    private boolean checkPacket(ProtocolDataPacket packet){
         boolean isValid = true;
         if(packet.getId() > protocol.getMinId() && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
             //send based on target id
-            resend(null, new ProtocolDataPacket(localMAC,packet.getTargetID(),packet.getId(),packet.getObject()));
+            sendPacket(null, new ProtocolDataPacket(localMAC,packet.getTargetID(),packet.getId(),packet.getObject()));
         }else{
             isValid = false;
         }
@@ -214,15 +214,11 @@ public class CommunicationController {
     }
     
     /**
-     * TO DO: In the future we will have to add to the packet where has it come through
-     * so we will have to add our local mac to the packet, this can be done here
-     * or inside connection. This will also have to check for the shortest path
-     * to the target mac once the lookup tables are implemented.
-     * We will also probably have to check if the 
-     * @param conn
-     * @param packet 
+     * Receives a packet to be sent via the best path using the lookup tables
+     * @param conn Connection to be avoided, can be null if there is no connection to be avoided
+     * @param packet Packet to be sent
      */
-    void resend(Connection conn, ProtocolDataPacket packet){
+    void sendPacket(Connection conn, ProtocolDataPacket packet){
         boolean found = false;
         Connection leastJumps = null;
         int minJumps = -1;
@@ -414,7 +410,10 @@ public class CommunicationController {
         return returnMap;
     }
     
-        
+    /**
+     * Gets any valid mac of the pc
+     * @return Returns a String of the mac address
+     */
     private String getMac(){
         //This gets the first MAC it finds. We may need to check which MAC we get.
         boolean found = false;
