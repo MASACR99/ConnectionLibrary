@@ -190,7 +190,7 @@ class Connection implements Runnable{
                             this.protocol.processMessage(this, received);
                         }
                         else {
-                            controller.resend(this,received);
+                            controller.sendPacket(this,received);
                         }
                     }
                     lastMessageReceived=System.currentTimeMillis();
@@ -403,7 +403,7 @@ class Connection implements Runnable{
             ArrayList<String> macList = new ArrayList<String>();
             macList.add(this.socket.getInetAddress().toString());
             macList.add(this.controller.getLocalMAC());
-            controller.resend(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
+            controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
         }
     }
     
@@ -413,7 +413,7 @@ class Connection implements Runnable{
             macList.add(this.controller.getLocalMAC());
             for(String mac : this.connectedMap.keySet()){
                 if(!macList.contains(mac)){
-                    controller.resend(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
+                    controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
                 }
             }
         }else{
