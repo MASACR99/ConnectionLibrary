@@ -91,7 +91,7 @@ class Protocol {
         //though sometimes the packet will have a special protocol that will not have
         //a target MAC, so we must check this special cases.
         if (packet!=null){
-            if(packet.getId() <= 12){
+            if(packet.getId() <= this.lengthRequiredProtocol){
                 switch (packet.getId()){
                     case 1:
                         conn.answerTestRequest(packet);

@@ -36,6 +36,7 @@ public class CommunicationController {
     private ClientConnector clientConn;
     private ConnectionInterfaceInitiater initiater;
     private String localMAC;
+    Protocol protocol;
     
     /**
      * Empty constructor, starts port as 42069, healthwait 1500, ackwait = 2500
@@ -90,8 +91,9 @@ public class CommunicationController {
      * Method used to initialize all needed classes, methods and threads of the library
      */
     private void libraryStarter(){
-        
         this.localMAC=this.getMac();
+        
+        protocol = new Protocol();
         
         for(int i = 0; i < maxPc; i++){
             Connection conn = null;
@@ -180,7 +182,7 @@ public class CommunicationController {
      */
     private boolean send(ProtocolDataPacket packet){
         boolean isValid = true;
-        if(packet.getId() > 12 && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
+        if(packet.getId() > protocol.getMinId() && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
             //send based on target id
             resend(null, new ProtocolDataPacket(localMAC,packet.getTargetID(),packet.getId(),packet.getObject()));
         }else{
@@ -292,7 +294,7 @@ public class CommunicationController {
      */
     void getServerSocket(Socket socket){
         try{
-            Connection conn = new Connection(this, socket,initiater);
+            Connection conn = new Connection(this, socket,initiater, protocol);
             conn.setConnectionType(SERVER);
             Thread thread = new Thread(conn);
             thread.start();
@@ -307,7 +309,7 @@ public class CommunicationController {
      */
     private void getClientSocket(Socket socket){
         try{
-            Connection conn = new Connection(this, socket,initiater);
+            Connection conn = new Connection(this, socket,initiater, protocol);
             Thread thread = new Thread(conn);
             thread.start();
         }catch(IOException ex){

@@ -40,11 +40,11 @@ class Connection implements Runnable{
     private HashMap<String, Connection> connectedMap = null; //Only used on connections that must ask to other mac addresses if they have available connections
     private String lastTestedMac = null; //Same as above
     
-    Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
+    Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater, Protocol protocol) throws IOException {
         this.controller = controller;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
-        this.protocol=new Protocol();
+        this.protocol=protocol;
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
