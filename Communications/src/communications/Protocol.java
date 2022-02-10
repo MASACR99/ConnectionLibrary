@@ -50,9 +50,7 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(7, "Validate connection", "Boolean"));
         this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
-        this.protocolList.add(new ProtocolDescription(10, "Available Connections", "Null"));
-        this.protocolList.add(new ProtocolDescription(11, "Process IP asker", "String"));
-        this.protocolList.add(new ProtocolDescription(12, "Recevie new IP", "String"));
+        this.protocolList.add(new ProtocolDescription(10, "Available Connections", "ArrayList <String>"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
@@ -132,21 +130,7 @@ class Protocol {
                     case 10:
                         //connection asks to controller if it has available connections
                         //returns an 11 with a boolean
-                        conn.availableConnections(packet);
-                        break;
-                        
-                    case 11:
-                        //connection receives a boolean on true it sends the IP to the
-                        //connected peer with number 12, on false, tries next mac,
-                        //if no more macs are available to ask too just closeConnection
-                        //with 8
-                        conn.processIpAsker(packet);
-                        break;
-
-                    case 12:
-                        //We found a valid ip address to reconnect to, so connection
-                        //can add that as a new socket and close the connection after
-                        conn.receiveNewIp(packet);
+                        conn.checkAvailability(packet);
                         break;
                         
                     default:
