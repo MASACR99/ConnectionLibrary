@@ -1,13 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 /**
- *
- * @author masa
+ * Stores the description of each protocol with it's id and the expected return type
+ * @author Jaume Fullana, Joan Gil
  */
 class ProtocolDescription {
     private final int id;

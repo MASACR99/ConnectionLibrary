@@ -1,19 +1,17 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 import java.io.Serializable;
 
 /**
- *
- * @author masa
+ * Class that stores each packet, made of the source identifier (MAC), target
+ * identifier (MAC), id of the protocol, and object to be sent.
+ * @author Jaume Fullana, Joan Gil
  */
-public class ProtocolDataPacket implements Serializable{    
-    //This will contain a full packet, this has the ability to be sent via
-    //socket or be received and read.
+public class ProtocolDataPacket implements Serializable{
     
     private final String sourceID;
     private final String targetID;

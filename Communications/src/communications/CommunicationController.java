@@ -1,18 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Scanner;
 
 /**
  * TO DO: Check if we need to use public, private, default or protected for our methods
@@ -141,7 +138,7 @@ public class CommunicationController {
      * @param ip String with the ip direction to connect to
      */
     public void connectToIp(String ip){
-        this.getClientSocket(clientConn.connect(ip, PORT));
+        this.clientConn.connect(ip);
     }
     
     /**

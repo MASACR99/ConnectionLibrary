@@ -1,15 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 import java.util.ArrayList;
 
 /**
- *
- * @author masa
+ * Stores methods defined in connection interface and calls them in the event
+ * that a packet with id not in protocol required is received.
+ * @author Jaume Fullana, Joan Gil
  */
 class ConnectionInterfaceInitiater {
     private ArrayList<ConnectionInterface> listeners = new ArrayList<>();
@@ -18,7 +18,7 @@ class ConnectionInterfaceInitiater {
         listeners.add(methodToAdd);
     }
     
-    void connectionEvent(ProtocolDataPacket packet){
+    synchronized void connectionEvent(ProtocolDataPacket packet){
         for(ConnectionInterface conn : listeners){
             conn.onMessageReceived(packet);
         }

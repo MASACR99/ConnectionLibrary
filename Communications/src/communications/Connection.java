@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
@@ -15,8 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *
- * @author PC
+ * Class that controls a Socket and everything related to it. It also has a thread
+ * that will be listening and processing all packets received.
+ * @author Jaume Fullana, Joan Gil
  */
 class Connection implements Runnable{
     
@@ -36,9 +36,6 @@ class Connection implements Runnable{
     private ObjectInputStream input;
     private ObjectOutputStream output;
     
-    private HashMap<String, Connection> connectedMap = null; //Only used on connections that must ask to other mac addresses if they have available connections
-    private String lastTestedMac = null; //Same as above
-    
     Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater, Protocol protocol) throws IOException {
         this.controller = controller;
         this.socket = socket;
@@ -51,24 +48,30 @@ class Connection implements Runnable{
         this.lastMessageReceived = System.currentTimeMillis();
         this.serverHealth = new ServerHealth(controller, this);
         this.initiater = initiater;
-        //comença amb 0 ja que sino li feim es setter per cambiar valor a tipus
-        //de conexio, instanciat pes seervidor o pes client, farem que simplement
-        //sigui tractat com una conexio de ses "antigues"
         this.connectionType=CLIENT;
     }
     
-    void addToLookup(HashMap<String,Integer> neighbourMap){
-        for(String str : neighbourMap.keySet()){
+    /**
+     * Merges the already existing lookup with the neighbor one to get more
+     * precise results
+     * @param neighborMap Received hashmap of the neighbor
+     */
+    void addToLookup(HashMap<String,Integer> neighborMap){
+        for(String str : neighborMap.keySet()){
             if(!lookup.containsKey(str)){
-                lookup.put(str, neighbourMap.get(str)+1);
+                lookup.put(str, neighborMap.get(str)+1);
             }else{
-                if(lookup.get(str) > (neighbourMap.get(str)+1)){
-                    lookup.replace(str, neighbourMap.get(str)+1);
+                if(lookup.get(str) > (neighborMap.get(str)+1)){
+                    lookup.replace(str, neighborMap.get(str)+1);
                 }
             }
         }
     }
     
+    /**
+     * Merges already existing lookup with data from the packet trace packet.
+     * @param macPath Macs of all the received macs from the packet trace packet.
+     */
     void addToLookup(ArrayList <String> macPath){
         int counter=1;
         for(String str : macPath){
@@ -83,6 +86,10 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Adds the mac as the connected mac to the lookup.
+     * @param mac Neighbor mac.
+     */
     void addToLookup(String mac){
         if(!lookup.containsKey(mac)){
             lookup.put(mac, 1);
@@ -93,6 +100,10 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Returns the localMAC of the machine
+     * @return Local mac of the machine
+     */
     String getLocalMac(){
         return this.controller.getLocalMAC();
     }
@@ -125,7 +136,6 @@ class Connection implements Runnable{
         return serverHealth;
     }
 
-    //TODO: Discuss if we should store this into a variable fore easier access
     String getConnectedMAC() {
         return connectedMAC;
     }
@@ -371,12 +381,22 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Send a package that traces it's route between us and it's target
+     * @param targetId Target MAC address
+     */
     void sendTraceroute(String targetId){
         ArrayList macPath=new ArrayList<>();
         macPath.add(this.controller.getLocalMAC());
         this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),targetId,9,macPath));
     }
     
+    /**
+     * When a traceroute packet is received we check if it's for us, if so we add
+     * the data to the lookup table, if it's not for us we add our mac to the packet
+     * and send it via the shortest known path to the target
+     * @param packetReceived Packet received via connection
+     */
     void addMacTraceroute(ProtocolDataPacket packetReceived){
         if (packetReceived.getSourceID().equals(this.controller.getLocalMAC())){
             this.addToLookup((ArrayList)packetReceived.getObject());
@@ -388,18 +408,32 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Updates the lookup table based on the neighbor peer. And sends back it's own
+     * HashMap of the lookup table.
+     * @param packetReceived Packet received via connection
+     */
     void receiveLookupTable(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
         this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),6,this.controller.joinMaps()));
     }
     
+    /**
+     * Updates the lookup table based on the neighbor peer. And sends back a connection
+     * approved packet
+     * @param packetReceived Packet received via connection
+     */
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
         send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
     }
     
+    /**
+     * Method to begin a package that will be propagated through all the peers
+     * unless it finds a peer that has space for a connection.
+     */
     private void startAskingMacs(){
-        for(String mac : this.connectedMap.keySet()){
+        for(String mac : this.controller.getConnectedMacs()){
             ArrayList<String> macList = new ArrayList<String>();
             macList.add(this.socket.getInetAddress().toString());
             macList.add(this.controller.getLocalMAC());
@@ -407,11 +441,17 @@ class Connection implements Runnable{
         }
     }
     
+    /**
+     * Method to receive a packet that checks if the controller has space for another
+     * pc connection. If it does it starts a new connection to the ip in the packet
+     * if not it resends the packet adding it's mac address to the packet object.
+     * @param packet Received packet via connection.
+     */
     void checkAvailability(ProtocolDataPacket packet){
         if(!this.controller.availableConnections()){
             ArrayList<String> macList = (ArrayList)packet.getObject();
             macList.add(this.controller.getLocalMAC());
-            for(String mac : this.connectedMap.keySet()){
+            for(String mac : this.controller.getConnectedMacs()){
                 if(!macList.contains(mac)){
                     controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
                 }

@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
@@ -9,12 +8,12 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
- *
- * @author PC
+ * Client-side class that has the connect logic and a thread that checks for
+ * "dead but not null" sockets to reinitialize them to solve errors in the
+ * connections
+ * @author Jaume Fullana, Joan Gil
  */
 class ClientConnector implements Runnable{
-    
-    //TO DO: Check if actual implementation of PORT is valid for our application
     
     private CommunicationController controller;
     
@@ -22,9 +21,14 @@ class ClientConnector implements Runnable{
         this.controller = controller;
     }
     
-    Socket connect(String ip, int port){
+    /**
+     * Starts a connection with a given ip and returns it's socket
+     * @param ip Ip of the pc to connect to
+     * @return Socket of the connection or null if there's an error
+     */
+    Socket connect(String ip){
         try {
-            Socket socket=new Socket(ip,port);
+            Socket socket=new Socket(ip,this.controller.PORT);
             System.out.println("Connected");
             return socket;
             
@@ -50,6 +54,11 @@ class ClientConnector implements Runnable{
         }
     }
     
+    /**
+     * Method that attempts to recover a connection by trying to connect to it.
+     * Only called if the connection was closed by the ServerHealth class
+     * @param conn Connection class to be reestablished
+     */
     private void tryToReconnect(Connection conn){
         try {
             Socket socket=new Socket(conn.getIp(),controller.PORT);

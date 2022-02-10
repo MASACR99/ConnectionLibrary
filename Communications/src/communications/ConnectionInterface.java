@@ -1,13 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 /**
- *
- * @author masa
+ * Interface to override a method that is called as an event when a packet is received
+ * outside the protocol required to run the backend.
+ * @author Jaume Fullana, Joan Gil
  */
 public interface ConnectionInterface {
     void onMessageReceived(ProtocolDataPacket packet);

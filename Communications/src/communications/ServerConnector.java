@@ -1,15 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 import java.net.ServerSocket;
 
 /**
- *
- * @author masa
+ * Thread that accepts socket connections and starts connections classes by sending
+ * the accepted sockets to the controller
+ * @author Jaume Fullana, Joan Gil
  */
 class ServerConnector implements Runnable{
     
@@ -23,6 +23,9 @@ class ServerConnector implements Runnable{
     
     private ServerSocket serverSocket;
 
+    /**
+     * Waits for an outside connection
+     */
     void connect() {
         try{
             serverSocket = new ServerSocket(controller.PORT);

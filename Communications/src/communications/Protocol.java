@@ -1,35 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
 import java.util.ArrayList;
 
 /**
- *
- * @author masa
+ * It stores the "protocols" to be used, where any protocol has an integer id,
+ * a name and the return type. It has the ability to be expanded with client
+ * "protocols" and returns the received packets to the client by using the
+ * connection interface initiater.
+ * @author Jaumer Fullana, Joan Gil
  */
-/*
-
-1- server health check (envia missatge per saber si tot obe V
-2- server health ack (respon que to be) V
-3- server ask Type (diferencia entre mvl i pc, seran constants, client retorna el tipo de modul  
-qu es, no tendra target ja que sera es primer missatge enviat per server a nes client recient conectar) V
-4- validateConnection (retorna true si ok, el servidor no te totes les conexions ocupades, false si les te ocupades) V
-5- ProcessValidation V
-6- CloseConnection (una conexio que es tanca envia aixo perque l'altre part sapiga que es va a tancar i per tant tambe la tanqui)
-
-mes endevant:
-7- demana a veinat directe mac ??? alomillo no necesari XX
-8- demena mac qualsevol veinat
-9- ask aveilable, s'intenten conectar, si no tens puesto demenaras a tots es veinats amem si colcu en te (retorna null o innetAddress)
-10- ChangePositions
-11- askLookup, a ne veinat
-12- traceRoute, anvia una arraylist amb sa teva mac i per cada pc que pasi s'anira afegint sa seva mac a sarraylist a index 0.
-
-*/
 class Protocol {
     
     private ArrayList<Integer> nonUsableIDs;

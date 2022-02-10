@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package communications;
 
@@ -9,8 +8,11 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 /**
- *
- * @author PC
+ * Sends messages based on the defined variables and waits for an ok signal
+ * with an integer value, it checks if the value is correct, if it isn't it forces,
+ * by using the client connector logic, the socket to be rebuilt to attempt to
+ * solve any possible problem
+ * @author Jaume Fullana, Joan Gil
  */
 class ServerHealth implements Runnable{
     
@@ -45,6 +47,10 @@ class ServerHealth implements Runnable{
         }
     }
     
+    /**
+     * Waits for a defined time and sends a test package. Then waits for a return
+     * and if it doesn't arrive or is incorrect it restarts the socket.
+     */
     private void checkState(){
         if (this.connection.isStatusOk() && System.currentTimeMillis()-this.connection.getLastMessageReceived()>controller.SERVERHEALTHMAXWAIT){
             this.createTestMessage();
@@ -68,6 +74,9 @@ class ServerHealth implements Runnable{
         this.checkCode=ByteBuffer.wrap(bytes).getInt();
     }
     
+    /**
+     * Waits for the ACK message
+     */
     private void waitTestAnswer(){
         this.ACKwait=true;
         this.timeSent=System.currentTimeMillis();
@@ -82,6 +91,10 @@ class ServerHealth implements Runnable{
         }
     }
     
+    /**
+     * Checks if the integer in the ACK packet is the same that was sent
+     * @param packet Received ACK packet
+     */
     void checkTestAnswer(ProtocolDataPacket packet){
         if (((int)packet.getObject()) == checkCode){
             this.ACKwait=false;
