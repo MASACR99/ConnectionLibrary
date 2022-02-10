@@ -115,37 +115,6 @@ public class CommunicationController {
     public String getLocalMAC() {
         return localMAC;
     }
-
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws InterruptedException {
-        // TODO code application logic here
-        // TODO crear classe controladora per tot es programa, e interficie perque
-        // sigui aplicada a nes programa que empleara aquesta biblioteca per tal de sobrescrigui el metode, el cual
-        //sera l'encarregat de rebre coses del comands del protocol creats per l'usuari
-        CommunicationController con = new CommunicationController();
-        Scanner input = new Scanner(System.in);
-        while(true){
-            System.out.println("Enter command: ");
-            System.out.println("1- Connect");
-            System.out.println("2- Chat");
-            switch(input.nextInt()){
-                case 1:
-                    System.out.println("Gib ip");
-                    input.nextLine();
-                    con.connectToIp(input.nextLine());
-                    break;
-                case 2:
-                    System.out.println("Not yet bookaroo");
-                    break;
-                default:
-                    System.out.println("You did an oopsie");
-                    break;
-            }
-        }
-    }
     
     /**
      * Adds a ConnectionInterface to the initiater to be called
