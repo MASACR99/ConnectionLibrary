@@ -190,6 +190,24 @@ public class CommunicationController {
     }
     
     /**
+     * Serach for all the MACs in all the lookup tables of every connection. 
+     * @return ArrayList where are all the MACs
+     */
+    public ArrayList<String> getConnectedMacs(){
+        ArrayList <String> connectedMacs=new ArrayList<>();
+        for(Connection conn:this.pcConnections){
+           if (conn!=null){
+                for (String mac:conn.getLookup().keySet()){
+                    if (!connectedMacs.contains(mac) && !mac.equals(this.localMAC)){
+                        connectedMacs.add(mac);
+                    }
+                }
+           }
+        }
+        return connectedMacs;
+    }
+    
+    /**
      * Private getter of pcConnections
      * @return 
      */
