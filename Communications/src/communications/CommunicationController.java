@@ -6,6 +6,8 @@
 package communications;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,6 +90,9 @@ public class CommunicationController {
      * Method used to initialize all needed classes, methods and threads of the library
      */
     private void libraryStarter(){
+        
+        this.localMAC=this.getMac();
+        
         for(int i = 0; i < maxPc; i++){
             Connection conn = null;
             pcConnections.add(conn);
@@ -104,6 +109,11 @@ public class CommunicationController {
         serverThread.start();
         clientThread.start();
     }
+    
+    public String getLocalMAC() {
+        return localMAC;
+    }
+
     
     /**
      * @param args the command line arguments
@@ -170,7 +180,7 @@ public class CommunicationController {
      */
     private boolean send(ProtocolDataPacket packet){
         boolean isValid = true;
-        if(packet.getId() > 6 && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
+        if(packet.getId() > 12 && packet.getTargetID() != null && !packet.getTargetID().equals(localMAC)){
             //send based on target id
             resend(null, new ProtocolDataPacket(localMAC,packet.getTargetID(),packet.getId(),packet.getObject()));
         }else{
@@ -394,5 +404,25 @@ public class CommunicationController {
             }
         }
         return returnMap;
+    }
+    
+        
+    private String getMac(){
+        //This gets the first MAC it finds. We may need to check which MAC we get.
+        try{
+            InetAddress localHost = InetAddress.getLocalHost();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            byte[] mac = ni.getHardwareAddress();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mac.length; i++) {
+                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+            }
+            String address = sb.toString();
+            return address;
+        }catch(Exception ex){
+            ex.printStackTrace();
+            System.out.println("Couldnt get Mac address");
+            return null;
+        }
     }
 }

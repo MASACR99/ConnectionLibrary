@@ -47,25 +47,6 @@ class ServerConnector implements Runnable{
             }
         }
     }
-    
-    String getMac(){
-        //This gets the first MAC it finds. We may need to check which MAC we get.
-        try{
-            InetAddress localHost = InetAddress.getLocalHost();
-            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
-            byte[] mac = ni.getHardwareAddress();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < mac.length; i++) {
-                sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-            }
-            String address = sb.toString();
-            return address;
-        }catch(Exception ex){
-            ex.printStackTrace();
-            System.out.println("Couldnt get Mac address");
-            return null;
-        }
-    }
 
     @Override
     public void run() {
