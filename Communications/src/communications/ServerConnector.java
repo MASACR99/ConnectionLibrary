@@ -5,8 +5,6 @@
  */
 package communications;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 
 /**

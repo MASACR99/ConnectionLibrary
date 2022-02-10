@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -91,7 +92,7 @@ public class CommunicationController {
      * Method used to initialize all needed classes, methods and threads of the library
      */
     private void libraryStarter(){
-        this.localMAC=this.getMac();
+        
         
         protocol = new Protocol();
         
@@ -105,11 +106,21 @@ public class CommunicationController {
         serverConn = new ServerConnector(this);
         clientConn = new ClientConnector(this);
         
+        
+        
         Thread serverThread = new Thread(serverConn);
         Thread clientThread = new Thread(clientConn);
         
         serverThread.start();
         clientThread.start();
+        
+        try{
+            Thread.sleep(500);
+        }catch(Exception ex){
+            System.out.println("FUUUUCK");
+        }
+        
+        this.localMAC=this.getMac();
     }
     
     public String getLocalMAC() {
@@ -398,10 +409,17 @@ public class CommunicationController {
         
     private String getMac(){
         //This gets the first MAC it finds. We may need to check which MAC we get.
+        boolean found = false;
+        byte[] mac = null;
         try{
-            InetAddress localHost = InetAddress.getLocalHost();
-            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
-            byte[] mac = ni.getHardwareAddress();
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while(networkInterfaces.hasMoreElements() && !found){
+                NetworkInterface net = networkInterfaces.nextElement();
+                mac = net.getHardwareAddress();
+                if(mac != null){
+                    found = true;
+                }
+            }
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mac.length; i++) {
                 sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
