@@ -27,10 +27,9 @@ class Connection implements Runnable{
     private boolean statusOk;
     private long lastMessageReceived;
     private InetAddress ip;
-    private String connectedMAC;
-    private String localMAC;
     private int connectionType;
     private boolean running;
+    private String connectedMAC;
     private ConnectionInterfaceInitiater initiater;
     private HashMap<String, Integer> lookup= new HashMap<>();
     
@@ -40,11 +39,12 @@ class Connection implements Runnable{
     private HashMap<String, Connection> connectedMap = null; //Only used on connections that must ask to other mac addresses if they have available connections
     private String lastTestedMac = null; //Same as above
     
-    Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater) throws IOException {
+    Connection(CommunicationController controller, Socket socket, ConnectionInterfaceInitiater initiater, Protocol protocol) throws IOException {
         this.controller = controller;
         this.socket = socket;
         this.ip=this.socket.getInetAddress();
-        this.protocol=new Protocol();
+        this.protocol=protocol;
+        this.connectedMAC = null;
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
@@ -83,6 +83,20 @@ class Connection implements Runnable{
         }
     }
     
+    void addToLookup(String mac){
+        if(!lookup.containsKey(mac)){
+            lookup.put(mac, 1);
+        }else{
+            if(lookup.get(mac) > 1){
+                lookup.replace(mac, 1);
+            }
+        }
+    }
+    
+    String getLocalMac(){
+        return this.controller.getLocalMAC();
+    }
+    
     /**
      * Returns the number of jumps to a mac address based on the lookup table
      * Returns -1 if that MAC doesn't exist in the table
@@ -111,24 +125,13 @@ class Connection implements Runnable{
         return serverHealth;
     }
 
+    //TODO: Discuss if we should store this into a variable fore easier access
     String getConnectedMAC() {
         return connectedMAC;
     }
 
-    void setConnectedMAC(String connectedMAC) {
-        this.connectedMAC = connectedMAC;
-    }
-
     void setConnectionType(int connectionType) {
         this.connectionType = connectionType;
-    }
-
-    String getLocalMAC() {
-        return localMAC;
-    }
-
-    void setLocalMAC(String localMAC) {
-        this.localMAC = localMAC;
     }
 
     long getLastMessageReceived() {
@@ -178,7 +181,7 @@ class Connection implements Runnable{
                     //If the received packet id isn't one of the protocol
                     //and the target MAC is equals to ours
                     //we activate the connectionEvent
-                    if(received.getTargetID() == null || received.getTargetID().equals(localMAC)){
+                    if(received.getTargetID() == null || received.getTargetID().equals(this.controller.getLocalMAC())){
                         if(!this.protocol.processMessage(this, received)){
                             initiater.connectionEvent(received);
                         }
@@ -237,7 +240,7 @@ class Connection implements Runnable{
      * has to be resend.
      */
     void answerTestRequest(ProtocolDataPacket packetReceived){
-        ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,2,packetReceived.getObject());
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),2,packetReceived.getObject());
         send(packet);
     }
     
@@ -246,7 +249,7 @@ class Connection implements Runnable{
      * device.
      */
     void askDeviceType(){
-        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,null,3,null);
+        ProtocolDataPacket packet=new ProtocolDataPacket(this.controller.getLocalMAC(),null,3,null);
         send(packet);
     }
     
@@ -256,8 +259,9 @@ class Connection implements Runnable{
      * @param packetReceived packet that ask the device type
      */
     void sendDeviceType(ProtocolDataPacket packetReceived){
+        this.addToLookup((String) packetReceived.getSourceID());
         this.connectedMAC = (String) packetReceived.getSourceID();
-        ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,4,PC);
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),4,PC);
         send(packet);
     }
     
@@ -272,19 +276,20 @@ class Connection implements Runnable{
      */
     void processDeviceType(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet;
+        this.addToLookup((String) packetReceived.getSourceID());
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
         int deviceType=(int)packetReceived.getObject(); 
         if (deviceType == MVL){
             validated = true;
-            packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,this.controller.joinMaps());
+            packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
             if (validated){
-                packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,5,this.controller.joinMaps());
+                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),5,this.controller.joinMaps());
                 send(packet);
                 this.controller.addPcConnection(this);
             }
@@ -295,12 +300,12 @@ class Connection implements Runnable{
                 //First we get the hashmap with the macs and the connections to get to those
                 this.getConnectedMAC();
                 //Then we start asking our first neighbour
-                this.askIpNextMac();
-                /*packet = new ProtocolDataPacket(this.localMAC,this.connectedMAC,7,false);
+                this.startAskingMacs();
+                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),7,false);
                 send(packet);
                 Thread.sleep(1000);
                 this.closeSocket();
-                this.running=false;*/
+                this.running=false;
             } catch(Exception ex){
                 System.out.println("sleep processDeviceType: "+ex.getMessage());
                 this.closeSocket();
@@ -331,7 +336,7 @@ class Connection implements Runnable{
      * of 1 second this connections closes.
      */
     void notifyClousure(){
-        ProtocolDataPacket packet=new ProtocolDataPacket(this.localMAC,this.connectedMAC,8,null);
+        ProtocolDataPacket packet=new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),8,null);
         this.send(packet);
         try {
             Thread.sleep(1000);
@@ -368,24 +373,24 @@ class Connection implements Runnable{
     
     void sendTraceroute(String targetId){
         ArrayList macPath=new ArrayList<>();
-        macPath.add(this.localMAC);
-        this.send(new ProtocolDataPacket(this.localMAC,targetId,9,macPath));
+        macPath.add(this.controller.getLocalMAC());
+        this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),targetId,9,macPath));
     }
     
     void addMacTraceroute(ProtocolDataPacket packetReceived){
-        if (packetReceived.getSourceID().equals(this.localMAC)){
+        if (packetReceived.getSourceID().equals(this.controller.getLocalMAC())){
             this.addToLookup((ArrayList)packetReceived.getObject());
         }
         else {
             ArrayList <String> macPath=(ArrayList)packetReceived.getObject();
-            macPath.add(0,this.localMAC);
+            macPath.add(0,this.controller.getLocalMAC());
             this.send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),9,macPath));
         }
     }
     
     void receiveLookupTable(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
-        this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,6,this.controller.joinMaps()));
+        this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),6,this.controller.joinMaps()));
     }
     
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
@@ -393,65 +398,27 @@ class Connection implements Runnable{
         send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
     }
     
-    private HashMap getConnectedMap(){
-        return controller.connectMaps(controller.joinMaps());
-    }
-    
-    private void askIpNextMac(){
-        boolean aux = false;
-        boolean lastCycle = false; 
-        //Used to trigger the for to send a message on the next cycle
-        //unless it's out last cycle
+    private void startAskingMacs(){
         for(String mac : this.connectedMap.keySet()){
-            if(this.lastTestedMac == null || lastCycle){
-                aux = true;
-                lastTestedMac = mac;
-                controller.resend(this,new ProtocolDataPacket(this.localMAC,mac,11,null));
-                break;
-            }else if(this.lastTestedMac == mac){
-                lastCycle = true;
+            ArrayList<String> macList = new ArrayList<String>();
+            macList.add(this.socket.getInetAddress().toString());
+            macList.add(this.controller.getLocalMAC());
+            controller.resend(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
+        }
+    }
+    
+    void checkAvailability(ProtocolDataPacket packet){
+        if(!this.controller.availableConnections()){
+            ArrayList<String> macList = (ArrayList)packet.getObject();
+            macList.add(this.controller.getLocalMAC());
+            for(String mac : this.connectedMap.keySet()){
+                if(!macList.contains(mac)){
+                    controller.resend(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
+                }
             }
-        }
-        //If we go through all the for each without sending a message close the connection
-        if(!aux){
-            this.notifyClousure();
-        }
-    }
-    
-    /**
-     * Asks the controller if there's space for more connections and returns
-     * the boolean in a message of protocol 11
-     * @param packet Received ProtocolDataPacket
-     */
-    void availableConnections(ProtocolDataPacket packet){
-        if(controller.availableConnections()){
-            this.send(new ProtocolDataPacket(this.localMAC,packet.getSourceID(),11,socket.getInetAddress().toString()));
         }else{
-            this.send(new ProtocolDataPacket(this.localMAC,packet.getSourceID(),11,false));
+            String ip = ((ArrayList<String>)packet.getObject()).get(0);
+            this.controller.connectToIp(ip);
         }
-    }
-    
-    /**
-     * Keeps asking neighboring mac if there's space until one responds true or
-     * we get to the end of the map.
-     * @param packet Received ProtocolDataPacket
-     */
-    void processIpAsker(ProtocolDataPacket packet){
-        //TO DO: Check if this if is correct
-        if((String)packet.getObject() == null){
-            askIpNextMac();
-        }else{
-            this.send(new ProtocolDataPacket(this.localMAC,this.connectedMAC,12,(String)packet.getObject()));
-        }
-    }
-    
-    /**
-     * Connects to the given IP to start a new handshake and sends a message to close
-     * the actual connection
-     * @param ip String IP to connect to
-     */
-    void receiveNewIp(ProtocolDataPacket packet){
-        controller.connectToIp((String)packet.getObject());
-        this.notifyClousure();
     }
 }
