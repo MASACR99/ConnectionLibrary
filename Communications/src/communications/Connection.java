@@ -406,10 +406,10 @@ class Connection implements Runnable{
     /**
      * Only used by Protocol to close a connection when notified
      */
-    void processClousure(){
+    void processClousure(boolean running){
         this.controller.nullifyConnection(this);
         this.closeSocket();
-        this.running=false;
+        this.running=running;
     }
     
     /**
@@ -514,5 +514,32 @@ class Connection implements Runnable{
             String ip = ((ArrayList<String>)packet.getObject()).get(0);
             this.controller.connectToIp(ip);
         }
+    }
+    
+    void requestChangePosition(String targetID){
+        send(new ProtocolDataPacket(controller.getLocalMAC(),targetID,11,this.controller.getConnectedPcsIps()));
+    }
+    
+    //TO DO: provar metodes i borrar comentaris. Lo comentat esta per probar en cas 
+    // de que no vagi be si tancam es thread massa prest. En cas de que aixo simplement vagi be.
+    //Lleva parametre a closeAllConnections i a processClousure
+    void answerChangePosition(ProtocolDataPacket packet){
+        ArrayList <InetAddress> ips=(ArrayList <InetAddress>)packet.getObject();
+        send(new ProtocolDataPacket(controller.getLocalMAC(),packet.getSourceID(),12,this.controller.getConnectedPcsIps()));
+        //this.controller.closeAllConnections(this);
+        //ALOMILLO POSA UN SLEEP
+        //this.processClousure(true);
+        this.controller.closeAllConnections(null);
+        this.controller.createNewConnections(ips, packet.getSourceID());
+        //this.running=false;
+    }
+    
+    void changingPositions(ProtocolDataPacket packet){
+        ArrayList <InetAddress> ips=(ArrayList <InetAddress>)packet.getObject();
+        //this.controller.closeAllConnections(this);
+        //this.processClousure(true);
+        this.controller.closeAllConnections(null);
+        this.controller.createNewConnections(ips, packet.getSourceID());
+        //this.running=false;
     }
 }

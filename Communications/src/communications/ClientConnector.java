@@ -5,6 +5,7 @@
 package communications;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -29,6 +30,18 @@ class ClientConnector implements Runnable{
     Socket connect(String ip){
         try {
             Socket socket=new Socket(ip,this.controller.PORT);
+            System.out.println("Connected");
+            return socket;
+            
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+    
+    Socket connect(InetAddress ip, int port){
+        try {
+            Socket socket=new Socket(ip,port);
             System.out.println("Connected");
             return socket;
             

@@ -5,8 +5,10 @@
 package communications;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class CommunicationController {
     private ClientConnector clientConn;
     private ConnectionInterfaceInitiater initiater;
     private String localMAC;
+    private InetAddress localIP;
     Protocol protocol;
     
     /**
@@ -118,6 +121,11 @@ public class CommunicationController {
         }
         
         this.localMAC=this.getMac();
+        try {
+            this.localIP=InetAddress.getLocalHost();
+        } catch (UnknownHostException ex) {
+            System.out.println("Error getting ip: "+ex.getMessage());
+        }
     }
     
     public String getLocalMAC() {
@@ -447,6 +455,53 @@ public class CommunicationController {
             ex.printStackTrace();
             System.out.println("Couldnt get Mac address");
             return null;
+        }
+    }
+    
+    /**
+     * Attempts to connect to the given ip
+     * @param ip String with the ip direction to connect to
+     */
+    public void connectToIp(InetAddress ip){
+        this.getClientSocket(clientConn.connect(ip, PORT));
+    }
+
+    ArrayList<InetAddress> getConnectedPcsIps(){
+        ArrayList <InetAddress> connectionsIps=new ArrayList<>();
+            for (Connection con:this.pcConnections){
+                if (con!=null){
+                    connectionsIps.add(con.getIp());
+                }
+            }
+        return connectionsIps;
+    }
+    
+    /**
+     * Close all the connections. You can pass a connection to not close that 
+     * connections in this moment.
+     * @param conn the connection to not close or null
+     */
+    void closeAllConnections(Connection conn){
+        for (Connection con:this.pcConnections){
+            if (con!=null && (conn==null || con!=conn)){
+                con.notifyClousure();
+                con.processClousure(false);
+            }
+        }
+    }
+    
+    /**
+     * Create new connections getted from a inetAddress ArrayList
+     * @param ips ArrayList of ips in InetAddress form
+     * @param changerPositionIp ip of the pc that are switching positions with you
+     */
+    void createNewConnections(ArrayList <InetAddress> ips, String changerPositionIp){
+        for (InetAddress ip:ips){
+            if (localIP!=ip){
+                this.connectToIp(ip);
+            } else {
+                this.connectToIp(changerPositionIp);
+            }
         }
     }
 }

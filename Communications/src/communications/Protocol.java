@@ -35,6 +35,8 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
         this.protocolList.add(new ProtocolDescription(10, "Available Connections", "ArrayList <String>"));
+        this.protocolList.add(new ProtocolDescription(11, "Request Change Position", "ArrayList <String>"));
+        this.protocolList.add(new ProtocolDescription(12, "Change Position", "ArrayList <String>"));
         this.protocolList.add(new ProtocolDescription(13, "Update Lookups", "Hashmap<String,Integer>"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
@@ -109,7 +111,7 @@ class Protocol {
                         break;
                         
                     case 8:
-                        conn.processClousure();
+                        conn.processClousure(false);
                         break;
                         
                     case 9:
@@ -121,6 +123,14 @@ class Protocol {
                         //returns an 11 with a boolean
                         conn.checkAvailability(packet);
                         break;
+                        
+                    case 11:
+                        conn.answerChangePosition(packet);
+                        break;
+                        
+                    case 12:
+                        conn.changingPositions(packet);
+                        break; 
                         
                     case 13:
                         conn.updateLookup(packet);
