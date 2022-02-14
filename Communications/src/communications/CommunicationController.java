@@ -174,16 +174,26 @@ public class CommunicationController {
      */
     public ArrayList<String> getConnectedMacs(){
         ArrayList <String> connectedMacs=new ArrayList<>();
-        for(Connection conn:this.pcConnections){
-           if (conn!=null){
-                for (String mac:conn.getLookup().keySet()){
-                    if (!connectedMacs.contains(mac) && !mac.equals(this.localMAC)){
-                        connectedMacs.add(mac);
-                    }
+        HashMap <String,Integer> mapMacs=this.joinMaps();
+            for (String mac:mapMacs.keySet()){
+                if (!mac.equals(this.localMAC)){
+                    connectedMacs.add(mac);
                 }
-           }
-        }
+            }
         return connectedMacs;
+    }
+    
+    /**
+     * Sends a broadcast Message to all the connections stored in the lookup tables.
+     * @param comand the comand given to the message
+     * @param data the data stored in the message
+     */
+    public void sendBroadcastMessage (int comand, Object data){
+        HashMap <String,Integer> joinedLookup=this.joinMaps();
+        HashMap <String,Connection> macPaths=this.connectMaps(joinedLookup);
+        for (String mac: macPaths.keySet()){
+            macPaths.get(mac).send(new ProtocolDataPacket(this.localMAC, mac, comand, data));
+        }
     }
     
     /**
@@ -386,7 +396,7 @@ public class CommunicationController {
      * @param joinedMap HashMap of all lookup tables joined with the fastest paths
      * @return A HashMap with the fastest connection for a given mac address
      */
-    HashMap connectMaps(HashMap<String, Integer> joinedMap){
+    HashMap<String, Connection> connectMaps(HashMap<String, Integer> joinedMap){
         HashMap<String, Connection> returnMap = new HashMap();
         for(String str : joinedMap.keySet()){
             for(Connection e : this.pcConnections){
