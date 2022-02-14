@@ -1,3 +1,4 @@
+
 /*
  * This project is given as is with license GNU/GPL-3.0. For more info look
  * on github
@@ -65,6 +66,10 @@ class Protocol {
     
     ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
+    }
+    
+    ProtocolDataPacket constructPacket(int id, int hops, String source, String target, Object object){
+        return new ProtocolDataPacket(source, target, hops, id, object);
     }
     
     boolean processMessage(Connection conn,ProtocolDataPacket packet){

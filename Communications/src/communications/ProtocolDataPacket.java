@@ -15,12 +15,22 @@ public class ProtocolDataPacket implements Serializable{
     
     private final String sourceID;
     private final String targetID;
+    private int hops;
     private final int id;
     private final Object object;
     
     public ProtocolDataPacket(String source, String target, int id, Object obj){
         this.sourceID = source;
         this.targetID = target;
+        this.hops = 0;
+        this.id = id;
+        this.object = obj;
+    }
+    
+    public ProtocolDataPacket(String source, String target, int hops, int id, Object obj){
+        this.sourceID = source;
+        this.targetID = target;
+        this.hops = hops;
         this.id = id;
         this.object = obj;
     }
@@ -33,6 +43,14 @@ public class ProtocolDataPacket implements Serializable{
         return targetID;
     }
 
+    public void addHop(){
+        hops++;
+    }
+    
+    public int getHops(){
+        return this.hops;
+    }
+    
     public int getId() {
         return id;
     }

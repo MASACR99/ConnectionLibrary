@@ -188,22 +188,26 @@ class Connection implements Runnable{
             try{
                 if (this.statusOk){
                     ProtocolDataPacket received=receive();
-                    //If the received packet id isn't one of the protocol
-                    //and the target MAC is equals to ours
-                    //we activate the connectionEvent
-                    if(received.getTargetID() == null || received.getTargetID().equals(this.controller.getLocalMAC())){
-                        if(!this.protocol.processMessage(this, received)){
-                            initiater.connectionEvent(received);
+                    //If the packet hasn't exceeded the max number of allowed jumps
+                    if(received.getHops() <= (this.lookup.size()*2)){
+                        //If the received packet id isn't one of the protocol
+                        //and the target MAC is equals to ours
+                        //we activate the connectionEvent
+                        if(received.getTargetID() == null || received.getTargetID().equals(this.controller.getLocalMAC())){
+                            if(!this.protocol.processMessage(this, received)){
+                                initiater.connectionEvent(received);
+                            }
+                        }else{
+                            if (received.getId()==7){
+                                this.protocol.processMessage(this, received);
+                            }
+                            else {
+                                received.addHop();
+                                controller.sendPacket(this,received);
+                            }
                         }
-                    }else{
-                        if (received.getId()==7){
-                            this.protocol.processMessage(this, received);
-                        }
-                        else {
-                            controller.sendPacket(this,received);
-                        }
+                        lastMessageReceived=System.currentTimeMillis();
                     }
-                    lastMessageReceived=System.currentTimeMillis();
                 }
                 Thread.sleep(50);
             } catch (Exception ex) {
