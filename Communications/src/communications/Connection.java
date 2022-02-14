@@ -57,14 +57,28 @@ class Connection implements Runnable{
      * @param neighborMap Received hashmap of the neighbor
      */
     void addToLookup(HashMap<String,Integer> neighborMap){
+        boolean saved = false;
         for(String str : neighborMap.keySet()){
             if(!lookup.containsKey(str)){
+                //Notify and start a thread that will send a message to all
+                //neighbors with the updated lookup
+                saved = true;
                 lookup.put(str, neighborMap.get(str)+1);
             }else{
                 if(lookup.get(str) > (neighborMap.get(str)+1)){
+                    //Notify and start a thread that will send a message to all
+                    //neighbors with the updated lookup
+                    saved = true;
                     lookup.replace(str, neighborMap.get(str)+1);
                 }
             }
+        }
+        //To avoid spending processing time instanciating stuff we put it last inside
+        //an if to just do it if necessary
+        if(saved){
+            LookupUpdater lookUpd = new LookupUpdater(this.controller);
+            Thread lookupUpdaterThread = new Thread(lookUpd);
+            lookupUpdaterThread.start();
         }
     }
     
@@ -74,15 +88,29 @@ class Connection implements Runnable{
      */
     void addToLookup(ArrayList <String> macPath){
         int counter=1;
+        boolean saved = false;
         for(String str : macPath){
             if(!lookup.containsKey(str)){
+                //Notify and start a thread that will send a message to all
+                //neighbors with the updated lookup
+                saved = true;
                 lookup.put(str, counter);
             }else{
                 if(lookup.get(str) > counter){
+                    //Notify and start a thread that will send a message to all
+                    //neighbors with the updated lookup
+                    saved = true;
                     lookup.replace(str, counter);
                 }
             }
             counter++;
+        }
+        //To avoid spending processing time instanciating stuff we put it last inside
+        //an if to just do it if necessary
+        if(saved){
+            LookupUpdater lookUpd = new LookupUpdater(this.controller);
+            Thread lookupUpdaterThread = new Thread(lookUpd);
+            lookupUpdaterThread.start();
         }
     }
     
@@ -91,12 +119,26 @@ class Connection implements Runnable{
      * @param mac Neighbor mac.
      */
     void addToLookup(String mac){
+        boolean saved = false;
         if(!lookup.containsKey(mac)){
+            //Notify and start a thread that will send a message to all
+            //neighbors with the updated lookup
+            saved = true;
             lookup.put(mac, 1);
         }else{
             if(lookup.get(mac) > 1){
+                //Notify and start a thread that will send a message to all
+                //neighbors with the updated lookup
+                saved = true;
                 lookup.replace(mac, 1);
             }
+        }
+        //To avoid spending processing time instanciating stuff we put it last inside
+        //an if to just do it if necessary
+        if(saved){
+            LookupUpdater lookUpd = new LookupUpdater(this.controller);
+            Thread lookupUpdaterThread = new Thread(lookUpd);
+            lookupUpdaterThread.start();
         }
     }
     
@@ -430,6 +472,14 @@ class Connection implements Runnable{
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
         send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
+    }
+    
+    /**
+     * Updated the lookup table based on the neighbor peer. Doesn't do anything else
+     * @param packetReceived  Packet received via connection
+     */
+    void updateLookup(ProtocolDataPacket packetReceived){
+        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
     }
     
     /**

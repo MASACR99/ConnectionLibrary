@@ -35,6 +35,7 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
         this.protocolList.add(new ProtocolDescription(10, "Available Connections", "ArrayList <String>"));
+        this.protocolList.add(new ProtocolDescription(13, "Update Lookups", "Hashmap<String,Integer>"));
         this.lengthRequiredProtocol = this.protocolList.size();
     }
     
@@ -119,6 +120,10 @@ class Protocol {
                         //connection asks to controller if it has available connections
                         //returns an 11 with a boolean
                         conn.checkAvailability(packet);
+                        break;
+                        
+                    case 13:
+                        conn.updateLookup(packet);
                         break;
                         
                     default:

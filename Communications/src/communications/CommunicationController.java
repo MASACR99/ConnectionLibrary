@@ -197,6 +197,17 @@ public class CommunicationController {
     }
     
     /**
+     * Sends a message to the closest neighbors
+     * @param command Id of the packet
+     * @param data Object to be sent with the packet
+     */
+    public void sendToNeighbors(int command, Object data){
+        for(Connection e : this.pcConnections){
+            e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
+        }
+    }
+    
+    /**
      * Private getter of pcConnections
      * @return 
      */
