@@ -12,15 +12,26 @@ import java.util.ArrayList;
  * @author Jaume Fullana, Joan Gil
  */
 class ConnectionInterfaceInitiater {
-    private ArrayList<ConnectionInterface> listeners = new ArrayList<>();
+    private ArrayList<ConnectionInterface> packetListeners = new ArrayList<>();
+    private ArrayList<ConnectionInterface> connectionListeners = new ArrayList<>();
     
-    void addListener(ConnectionInterface methodToAdd){
-        listeners.add(methodToAdd);
+    void addPacketListener(ConnectionInterface methodToAdd){
+        packetListeners.add(methodToAdd);
     }
     
-    synchronized void connectionEvent(ProtocolDataPacket packet){
-        for(ConnectionInterface conn : listeners){
+    void addConnectionListener(ConnectionInterface methodToAdd){
+        connectionListeners.add(methodToAdd);
+    }
+    
+    synchronized void packetEvent(ProtocolDataPacket packet){
+        for(ConnectionInterface conn : packetListeners){
             conn.onMessageReceived(packet);
+        }
+    }
+    
+    synchronized void connectionEvent(String mac){
+        for(ConnectionInterface conn : connectionListeners){
+            conn.onConnectionAccept(mac);
         }
     }
 }

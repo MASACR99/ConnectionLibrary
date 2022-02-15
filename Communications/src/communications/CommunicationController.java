@@ -138,7 +138,16 @@ public class CommunicationController {
      * @param conn A class implementing ConnectionInterface
      */
     public void addOnPacketListener(ConnectionInterface conn){
-        initiater.addListener(conn);
+        initiater.addPacketListener(conn);
+    }
+    
+    /**
+     * Adds a ConnectionInterface method to the initiater to be called
+     * as an event when a connection is accepted
+     * @param conn 
+     */
+    public void addOnConnectionListener(ConnectionInterface conn){
+        initiater.addConnectionListener(conn);
     }
     
     /**
