@@ -231,7 +231,7 @@ class Connection implements Runnable{
                 if (this.statusOk){
                     ProtocolDataPacket received=receive();
                     //If the packet hasn't exceeded the max number of allowed jumps
-                    if(received.getHops() <= (this.lookup.size()*2)){
+                    if(received.getHops() < 2 || received.getHops() <= (this.lookup.size()*2)){
                         //If the received packet id isn't one of the protocol
                         //and the target MAC is equals to ours
                         //we activate the connectionEvent

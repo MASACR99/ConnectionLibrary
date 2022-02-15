@@ -211,7 +211,9 @@ public class CommunicationController {
      */
     public void sendToNeighbors(int command, Object data){
         for(Connection e : this.pcConnections){
-            e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
+            if(e != null){
+                e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
+            }
         }
     }
     
