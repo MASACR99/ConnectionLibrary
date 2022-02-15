@@ -296,7 +296,7 @@ class Connection implements Runnable{
      * has to be resend.
      */
     void answerTestRequest(ProtocolDataPacket packetReceived){
-        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),2,packetReceived.getObject());
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,2,packetReceived.getObject());
         send(packet);
     }
     
@@ -317,7 +317,7 @@ class Connection implements Runnable{
     void sendDeviceType(ProtocolDataPacket packetReceived){
         this.addToLookup((String) packetReceived.getSourceID());
         this.connectedMAC = (String) packetReceived.getSourceID();
-        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),4,PC);
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,4,PC);
         send(packet);
     }
     
@@ -338,27 +338,26 @@ class Connection implements Runnable{
         int deviceType=(int)packetReceived.getObject(); 
         if (deviceType == MVL){
             validated = true;
-            packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),5,this.controller.joinMaps());
+            packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
             if (validated){
-                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),5,this.controller.joinMaps());
+                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
                 send(packet);
                 this.controller.addPcConnection(this);
-                this.initiater.connectionEvent(packetReceived.getSourceID());
+                this.initiater.connectionEvent(this.connectedMAC);
             }
         }
         
         if (!validated){
             try {
                 //First we get the hashmap with the macs and the connections to get to those
-                this.getConnectedMAC();
                 //Then we start asking our first neighbour
                 this.startAskingMacs();
-                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),7,false);
+                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,false);
                 send(packet);
                 Thread.sleep(1000);
                 this.closeSocket();
@@ -381,7 +380,7 @@ class Connection implements Runnable{
     void processValidation(ProtocolDataPacket packetReceived){
         if ((boolean)packetReceived.getObject()){
             this.controller.addPcConnection(this);
-            this.initiater.connectionEvent(packetReceived.getSourceID());
+            this.initiater.connectionEvent(this.connectedMAC);
         } else {
             this.closeSocket();
             this.running=false;
@@ -463,7 +462,7 @@ class Connection implements Runnable{
      */
     void receiveLookupTable(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
-        this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),6,this.controller.joinMaps()));
+        this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,6,this.controller.joinMaps()));
     }
     
     /**
@@ -473,7 +472,7 @@ class Connection implements Runnable{
      */
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
         this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
-        send(new ProtocolDataPacket(packetReceived.getSourceID(),packetReceived.getTargetID(),7,true));
+        send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,true));
     }
     
     /**
