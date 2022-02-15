@@ -6,18 +6,18 @@ import communications.ProtocolDataPacket;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 /**
  *
- * @author Jaume
+ * @author Jaume Fullana, Joan Gil
  */
 public class View extends JFrame{
     
@@ -27,26 +27,8 @@ public class View extends JFrame{
     public static void main(String[] args) throws InterruptedException {
  
         CommunicationController con = new CommunicationController();
+        con.connectToIp(JOptionPane.showInputDialog("Inserta la IP: "));
         View view=new View(con);
-        Scanner input = new Scanner(System.in);
-        while(true){
-            System.out.println("Enter command: ");
-            System.out.println("1- Connect");
-            System.out.println("2- Chat");
-            switch(input.nextInt()){
-                case 1:
-                    System.out.println("Gib ip");
-                    input.nextLine();
-                    con.connectToIp(input.nextLine());
-                    break;
-                case 2:
-                    System.out.println("Not yet bookaroo");
-                    break;
-                default:
-                    System.out.println("You did an oopsie");
-                    break;
-            }
-        }
     }
     
     private CommunicationController controller;
@@ -95,42 +77,12 @@ class ChatPanel extends JPanel implements ConnectionInterface{
         this.campo=new JTextField(20);
         this.botonEnviar=new JButton("Enviar");
         
-        Thread thread=new Thread(new Runnable() 
-        {   
-            ArrayList <String> macsSaved;
-            
-            @Override
-            public void run() {
-                while (true){
-                    try {
-                        Thread.sleep(5000);
-                        if (macsSaved==null || macsSaved.isEmpty()){
-                            macsSaved=controller.getConnectedMacs();
-                            for (String mac:macsSaved){
-                                macs.addItem(mac);
-                            }
-                        }
-                        if (!macsSaved.equals(controller.getConnectedMacs())){
-                            macsSaved=controller.getConnectedMacs();
-                            for (String mac:macsSaved){
-                                macs.addItem(mac);
-                            }
-                        }
-                    } catch (InterruptedException ex) {
-                        System.out.println(ex.getMessage());
-                    }
-                }
-            }
-        });
-        
-        thread.start();
-        
         botonEnviar.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 ProtocolDataPacket datos=new ProtocolDataPacket (controller.getLocalMAC(),
                         macs.getSelectedItem().toString(),666,campo.getText());
                 controller.sendMessage(datos);
-     
+                chat.append("\n - "+campo.getText());
             }
         });
         this.add(n_nick);
@@ -149,5 +101,21 @@ class ChatPanel extends JPanel implements ConnectionInterface{
                 chat.append("\n"+packet.getSourceID()+": "+((String)packet.getObject()));
             }
         } 
+    }
+
+    @Override
+    public void onConnectionAccept(String mac) {
+        boolean repeated=false;
+        int i=0;
+        while (repeated==false && i<macs.getItemCount()){
+            if (mac.equals(macs.getItemAt(i).toString())){
+                repeated=true;
+            }
+            i++;
+        }
+        
+        if (!repeated){
+            macs.addItem(mac);
+        }
     }
 }
