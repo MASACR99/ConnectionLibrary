@@ -83,37 +83,30 @@ class Protocol {
             if(packet.getId() <= this.lengthRequiredProtocol){
                 switch (packet.getId()){
                     case 1:
-                        System.out.println("1");
                         conn.answerTestRequest(packet);
                         break;
 
                     case 2: 
-                        System.out.println("2");
                         conn.getServerHealth().checkTestAnswer(packet);
                         break;
 
                     case 3:
-                        System.out.println("3");
                         conn.sendDeviceType(packet);
                         break;
 
                     case 4:
-                        System.out.println("4");
                         conn.processDeviceType(packet);
                         break;
                         
                     case 5:
-                        System.out.println("5");
                         conn.receiveLookupTable(packet);
                         break;
 
                     case 6:
-                        System.out.println("6");
                         conn.receiveLookupTable2(packet);
                         break;
                         
                     case 7:
-                        System.out.println("7");
                         conn.processValidation(packet);
                         break;
                         
