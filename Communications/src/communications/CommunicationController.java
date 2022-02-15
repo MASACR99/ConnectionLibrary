@@ -151,6 +151,18 @@ public class CommunicationController {
     }
     
     /**
+     * Creates a new ProtocolDataPacket
+     * @param targetMac String with the mac address to send the message to
+     * @param packetId ID of the packet to know how to react
+     * @param data Object to be sent
+     * @return 
+     */
+    public ProtocolDataPacket createPacket(String targetMac, int packetId, Object data){
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC, targetMac, packetId, data);
+        return packet;
+    }
+    
+    /**
      * Attempts to connect to the given ip
      * @param ip String with the ip direction to connect to
      */

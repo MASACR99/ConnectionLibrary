@@ -12,4 +12,5 @@ package communications;
 public interface ConnectionInterface {
     void onMessageReceived(ProtocolDataPacket packet);
     void onConnectionAccept(String mac);
+    void onConnectionClosed(String mac);
 }

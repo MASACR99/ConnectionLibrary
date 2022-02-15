@@ -348,7 +348,7 @@ class Connection implements Runnable{
                 packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.getConnectedMAC(),5,this.controller.joinMaps());
                 send(packet);
                 this.controller.addPcConnection(this);
-                this.initiater.connectionEvent(packetReceived.getSourceID());
+                this.initiater.connectionEvent(this.getConnectedMAC());
             }
         }
         
@@ -381,7 +381,7 @@ class Connection implements Runnable{
     void processValidation(ProtocolDataPacket packetReceived){
         if ((boolean)packetReceived.getObject()){
             this.controller.addPcConnection(this);
-            this.initiater.connectionEvent(packetReceived.getSourceID());
+            this.initiater.connectionEvent(this.getConnectedMAC());
         } else {
             this.closeSocket();
             this.running=false;
@@ -412,6 +412,7 @@ class Connection implements Runnable{
         this.controller.nullifyConnection(this);
         this.closeSocket();
         this.running=running;
+        this.initiater.closingEvent(this.connectedMAC);
     }
     
     /**
