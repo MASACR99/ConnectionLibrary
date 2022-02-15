@@ -146,7 +146,7 @@ public class CommunicationController {
      * @param ip String with the ip direction to connect to
      */
     public void connectToIp(String ip){
-        this.clientConn.connect(ip);
+        this.getClientSocket(this.clientConn.connect(ip));
     }
     
     /**
