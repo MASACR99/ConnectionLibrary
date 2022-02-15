@@ -29,6 +29,8 @@ public class CommunicationController {
     static final int SERVER = 24;
     static final int CLIENT = 25;
     
+    static final int MAXATTEMPTS = 30;
+    
     private ArrayList<Connection> pcConnections = new ArrayList<>();
     private ArrayList<Connection> mobileConnections = new ArrayList<>();
     private final int maxPc;
