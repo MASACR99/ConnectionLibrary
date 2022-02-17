@@ -121,15 +121,18 @@ public class CommunicationController {
         }
         
         this.localMAC=this.getMac();
-        try {
-            this.localIP=InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            System.out.println("Error getting ip: "+ex.getMessage());
-        }
     }
     
     public String getLocalMAC() {
         return localMAC;
+    }
+
+    public InetAddress getLocalIP() {
+        return localIP;
+    }
+
+    void setLocalIP(InetAddress localIP) {
+        this.localIP = localIP;
     }
     
     /**
@@ -242,6 +245,7 @@ public class CommunicationController {
         return this.mobileConnections;
     }
     
+    //TO DO: Afegir MVL connections
     /**
      * Receives a packet to be sent via the best path using the lookup tables
      * @param conn Connection to be avoided, can be null if there is no connection to be avoided
@@ -271,7 +275,8 @@ public class CommunicationController {
                 }
             }
         }
-        if(!found){
+        
+        if(!found && leastJumps != null){
             leastJumps.send(packet);
         }//TO DO: Decide what to do if there's no path
     }

@@ -49,6 +49,10 @@ class Connection implements Runnable{
         this.serverHealth = new ServerHealth(controller, this);
         this.initiater = initiater;
         this.connectionType=CLIENT;
+        
+        if (controller.getLocalIP()==null){
+            controller.setLocalIP(this.socket.getLocalAddress());
+        }
     }
     
     /**
@@ -341,6 +345,7 @@ class Connection implements Runnable{
             packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
+            this.initiater.connectionEvent(this.connectedMAC);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
