@@ -29,6 +29,8 @@ public class CommunicationController {
     static final int SERVER = 24;
     static final int CLIENT = 25;
     
+    static final int MAXATTEMPTS = 30;
+    
     private ArrayList<Connection> pcConnections = new ArrayList<>();
     private ArrayList<Connection> mobileConnections = new ArrayList<>();
     private final int maxPc;
@@ -154,6 +156,18 @@ public class CommunicationController {
     }
     
     /**
+     * Creates a new ProtocolDataPacket
+     * @param targetMac String with the mac address to send the message to
+     * @param packetId ID of the packet to know how to react
+     * @param data Object to be sent
+     * @return 
+     */
+    public ProtocolDataPacket createPacket(String targetMac, int packetId, Object data){
+        ProtocolDataPacket packet = new ProtocolDataPacket(this.localMAC, targetMac, packetId, data);
+        return packet;
+    }
+    
+    /**
      * Attempts to connect to the given ip
      * @param ip String with the ip direction to connect to
      */
@@ -186,6 +200,21 @@ public class CommunicationController {
             isValid = false;
         }
         return isValid;
+    }
+    
+    /**
+     * Removes the connection which mac address is received by parameter
+     * and sends the corresponding closure protocol
+     * @param con String with the mac of a connection
+     */
+    public void disconnect(String mac){
+        for(Connection conn : this.pcConnections){
+            if(conn.getConnectedMAC().equals(mac)){
+                conn.notifyClousure();
+                this.pcConnections.remove(conn);
+                break;
+            }
+        }
     }
     
     /**

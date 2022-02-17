@@ -4,9 +4,11 @@
  */
 package communications;
 
+import static communications.CommunicationController.MAXATTEMPTS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  * Client-side class that has the connect logic and a thread that checks for
@@ -17,6 +19,7 @@ import java.net.Socket;
 class ClientConnector implements Runnable{
     
     private CommunicationController controller;
+    private HashMap<InetAddress,Integer> hash = new HashMap();
     
     ClientConnector(CommunicationController controller) {
         this.controller = controller;
@@ -73,13 +76,23 @@ class ClientConnector implements Runnable{
      * @param conn Connection class to be reestablished
      */
     private void tryToReconnect(Connection conn){
-        try {
-            Socket socket=new Socket(conn.getIp(),controller.PORT);
-            conn.setSocket(socket);
-            conn.setStatusOk(true);
-            System.out.println("Reconnected");
-        } catch (IOException ex) {
-            System.out.println("Error reconnecting: " + ex.getMessage());
+        if(!hash.containsKey(conn.getIp())){
+            hash.put(conn.getIp(), 0);
+        }else{
+            hash.replace(conn.getIp(), hash.get(conn.getIp())+1);
+        }
+        if(hash.get(conn.getIp()) < MAXATTEMPTS){
+            try {
+                Socket socket=new Socket(conn.getIp(),controller.PORT);
+                conn.setSocket(socket);
+                conn.setStatusOk(true);
+                hash.remove(conn.getIp());
+                System.out.println("Reconnected");
+            } catch (IOException ex) {
+                System.out.println("Error reconnecting: " + ex.getMessage());
+            }
+        }else{
+            conn.processClousure(false);
         }
     }
     

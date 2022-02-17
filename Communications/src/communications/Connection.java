@@ -416,6 +416,7 @@ class Connection implements Runnable{
         this.controller.nullifyConnection(this);
         this.closeSocket();
         this.running=running;
+        this.initiater.closingEvent(this.connectedMAC);
     }
     
     /**
