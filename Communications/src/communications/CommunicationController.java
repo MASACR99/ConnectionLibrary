@@ -200,6 +200,21 @@ public class CommunicationController {
     }
     
     /**
+     * Removes the connection which mac address is received by parameter
+     * and sends the corresponding closure protocol
+     * @param con String with the mac of a connection
+     */
+    public void disconnect(String mac){
+        for(Connection conn : this.pcConnections){
+            if(conn.getConnectedMAC().equals(mac)){
+                conn.notifyClousure();
+                this.pcConnections.remove(conn);
+                break;
+            }
+        }
+    }
+    
+    /**
      * Serach for all the MACs in all the lookup tables of every connection. 
      * @return ArrayList where are all the MACs
      */
