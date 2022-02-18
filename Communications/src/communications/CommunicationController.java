@@ -126,17 +126,17 @@ public class CommunicationController {
         
         this.localMAC=this.getMac();
     }
-    
-    public String getLocalMAC() {
-        return localMAC;
-    }
 
     public InetAddress getLocalIP() {
         return localIP;
     }
 
-    void setLocalIP(InetAddress localIP) {
+    public void setLocalIP(InetAddress localIP) {
         this.localIP = localIP;
+    }
+    
+    public String getLocalMAC() {
+        return localMAC;
     }
     
     /**
@@ -292,7 +292,6 @@ public class CommunicationController {
         return this.mobileConnections;
     }
     
-    //TO DO: Afegir MVL connections
     /**
      * Receives a packet to be sent via the best path using the lookup tables
      * @param conn Connection to be avoided, can be null if there is no connection to be avoided
@@ -324,8 +323,7 @@ public class CommunicationController {
                 }
             }
         }
-        
-        if(!found && leastJumps != null){
+        if(!found){
             leastJumps.send(packet);
         }//TO DO: Decide what to do if there's no path
     }
@@ -559,7 +557,7 @@ public class CommunicationController {
      * connections in this moment.
      * @param conn the connection to not close or null
      */
-    void closeAllConnections(Connection conn){
+    public void closeAllConnections(Connection conn){
         synchronized(this.pcConnections){
             for (Connection con:this.pcConnections){
                 if (con!=null && (conn==null || con!=conn)){

@@ -345,7 +345,6 @@ class Connection implements Runnable{
             packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
-            this.initiater.connectionEvent(this.connectedMAC);
         } 
         else if (deviceType == PC){
             validated=this.controller.availableConnections();
@@ -428,6 +427,7 @@ class Connection implements Runnable{
     void closeSocket(){
         try {
             System.out.println("Closing sockets");
+            this.statusOk = false;
             this.socket.close();
             this.input.close();
             this.output.close();
