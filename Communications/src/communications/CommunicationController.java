@@ -31,7 +31,7 @@ public class CommunicationController {
     
     static final int MAXATTEMPTS = 30;
     
-    private ArrayList<Connection> pcConnections = new ArrayList<>();
+    final ArrayList<Connection> pcConnections = new ArrayList<>();
     private ArrayList<Connection> mobileConnections = new ArrayList<>();
     private final int maxPc;
     private ServerConnector serverConn;
@@ -100,7 +100,9 @@ public class CommunicationController {
         
         for(int i = 0; i < maxPc; i++){
             Connection conn = null;
-            pcConnections.add(conn);
+            synchronized(this.pcConnections){
+                pcConnections.add(conn);
+            }
         }
         
         initiater = new ConnectionInterfaceInitiater();
@@ -156,6 +158,25 @@ public class CommunicationController {
     }
     
     /**
+     * Adds a ConnectionInterface method to the initiater to be called 
+     * as an event when a connection is fully closed
+     * @param conn 
+     */
+    public void addOnDisconnectListener(ConnectionInterface conn){
+        initiater.addClosingListener(conn);
+    }
+    
+    /**
+     * Adds all of the above listeners at the same time
+     * @param conn 
+     */
+    public void addAllListeners(ConnectionInterface conn){
+        initiater.addPacketListener(conn);
+        initiater.addConnectionListener(conn);
+        initiater.addClosingListener(conn);
+    }
+    
+    /**
      * Creates a new ProtocolDataPacket
      * @param targetMac String with the mac address to send the message to
      * @param packetId ID of the packet to know how to react
@@ -208,11 +229,14 @@ public class CommunicationController {
      * @param con String with the mac of a connection
      */
     public void disconnect(String mac){
-        for(Connection conn : this.pcConnections){
-            if(conn.getConnectedMAC().equals(mac)){
-                conn.notifyClousure();
-                this.pcConnections.remove(conn);
-                break;
+        synchronized(this.pcConnections){
+            for(Connection conn : this.pcConnections){
+                if(conn != null){
+                    if(conn.getConnectedMAC().equals(mac)){
+                        conn.notifyClousure();
+                        break;
+                    }
+                }
             }
         }
     }
@@ -251,19 +275,13 @@ public class CommunicationController {
      * @param data Object to be sent with the packet
      */
     public void sendToNeighbors(int command, Object data){
-        for(Connection e : this.pcConnections){
-            if(e != null){
-                e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
+        synchronized(this.pcConnections){
+            for(Connection e : this.pcConnections){
+                if(e != null){
+                    e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
+                }
             }
         }
-    }
-    
-    /**
-     * Private getter of pcConnections
-     * @return 
-     */
-    ArrayList<Connection> getPcConnections(){
-        return this.pcConnections;
     }
     
     /**
@@ -285,19 +303,21 @@ public class CommunicationController {
         Connection leastJumps = null;
         int minJumps = -1;
         int aux;
-        for(Connection e : this.getPcConnections()){
-            if(e != null && e != conn){
-                if(e.getConnectedMAC() != null){
-                    aux = e.getJumpsTo(packet.getTargetID());
-                    if(aux != -1){
-                        if(aux == 1){
-                            e.send(packet);
-                            found = true;
-                            break;
-                        }else{
-                            if(minJumps == -1 || aux < minJumps){
-                                leastJumps = e;
-                                minJumps = aux;
+        synchronized(this.pcConnections){
+            for(Connection e : this.pcConnections){
+                if(e != null && e != conn){
+                    if(e.getConnectedMAC() != null){
+                        aux = e.getJumpsTo(packet.getTargetID());
+                        if(aux != -1){
+                            if(aux == 1){
+                                e.send(packet);
+                                found = true;
+                                break;
+                            }else{
+                                if(minJumps == -1 || aux < minJumps){
+                                    leastJumps = e;
+                                    minJumps = aux;
+                                }
                             }
                         }
                     }
@@ -317,15 +337,17 @@ public class CommunicationController {
     HashMap<String, Integer> joinMaps(){
         HashMap<String,Integer> map = new HashMap<>();
         HashMap<String,Integer> pointerMap = new HashMap<>();
-        for(Connection e : this.getPcConnections()){
-            if(e != null){
-                pointerMap = e.getLookup();
-                for(String macs : pointerMap.keySet()){
-                    if(!map.containsKey(macs)){
-                        map.put(macs, e.getJumpsTo(macs));
-                    }else{
-                        if(map.get(macs) > e.getJumpsTo(macs)){
-                            map.replace(macs, e.getJumpsTo(macs));
+        synchronized(this.pcConnections){
+            for(Connection e : this.pcConnections){
+                if(e != null){
+                    pointerMap = e.getLookup();
+                    for(String macs : pointerMap.keySet()){
+                        if(!map.containsKey(macs)){
+                            map.put(macs, e.getJumpsTo(macs));
+                        }else{
+                            if(map.get(macs) > e.getJumpsTo(macs)){
+                                map.replace(macs, e.getJumpsTo(macs));
+                            }
                         }
                     }
                 }
@@ -342,11 +364,13 @@ public class CommunicationController {
     boolean availableConnections(){
         boolean available = false;
         for(int i = 0; i < maxPc && available == false; i++){
-            if(pcConnections.get(i) == null){
-                available = true;
-            }else{
-                if(pcConnections.get(i).getIp() == null && pcConnections.get(i).getSocket() == null){
+            synchronized(this.pcConnections){
+                if(pcConnections.get(i) == null){
                     available = true;
+                }else{
+                    if(pcConnections.get(i).getIp() == null && pcConnections.get(i).getSocket() == null){
+                        available = true;
+                    }
                 }
             }
         }
@@ -403,7 +427,9 @@ public class CommunicationController {
             if(!samePcConnection(conn)){
                 ServerHealth health = new ServerHealth(this,conn);
                 conn.setServerHealth(health);
-                pcConnections.add(conn);
+                synchronized(this.pcConnections){
+                    pcConnections.add(conn);
+                }
             }
         }
     }
@@ -416,10 +442,12 @@ public class CommunicationController {
      */
     private boolean samePcConnection(Connection conn){
         boolean same = false;
-        for(Connection con : this.pcConnections){
-            if(con != null && con.getConnectedMAC() != null && con.getConnectedMAC().equals(conn.getConnectedMAC())){
-                same = true;
-                break;
+        synchronized(this.pcConnections){
+            for(Connection con : this.pcConnections){
+                if(con != null && con.getConnectedMAC() != null && con.getConnectedMAC().equals(conn.getConnectedMAC())){
+                    same = true;
+                    break;
+                }
             }
         }
         return same;
@@ -447,9 +475,10 @@ public class CommunicationController {
      * @param conn Closed connection
      */
     void nullifyConnection(Connection conn){
-        for(int i=0; i<this.pcConnections.size(); i++){
-            if(this.pcConnections!=null && this.pcConnections.get(i).equals(conn)){
-                this.pcConnections.set(i, null);
+        synchronized(this.pcConnections){
+            if(this.pcConnections.contains(conn)){
+                this.pcConnections.set(this.pcConnections.indexOf(conn), null);
+                //System.out.println("Connection is: " + this.pcConnections.get(this.pcConnections.indexOf(conn)));
             }
         }
     }
@@ -463,10 +492,12 @@ public class CommunicationController {
     HashMap<String, Connection> connectMaps(HashMap<String, Integer> joinedMap){
         HashMap<String, Connection> returnMap = new HashMap();
         for(String str : joinedMap.keySet()){
-            for(Connection e : this.pcConnections){
-                if(e.getLookup().containsKey(str) && e.getLookup().get(str) == joinedMap.get(str)){
-                    returnMap.put(str, e);
-                    break;
+            synchronized(this.pcConnections){
+                for(Connection e : this.pcConnections){
+                    if(e.getLookup().containsKey(str) && e.getLookup().get(str).equals(joinedMap.get(str))){
+                        returnMap.put(str, e);
+                        break;
+                    }
                 }
             }
         }
@@ -513,11 +544,13 @@ public class CommunicationController {
 
     ArrayList<InetAddress> getConnectedPcsIps(){
         ArrayList <InetAddress> connectionsIps=new ArrayList<>();
+        synchronized(this.pcConnections){
             for (Connection con:this.pcConnections){
                 if (con!=null){
                     connectionsIps.add(con.getIp());
                 }
             }
+        }
         return connectionsIps;
     }
     
@@ -527,10 +560,11 @@ public class CommunicationController {
      * @param conn the connection to not close or null
      */
     void closeAllConnections(Connection conn){
-        for (Connection con:this.pcConnections){
-            if (con!=null && (conn==null || con!=conn)){
-                con.notifyClousure();
-                con.processClousure(false);
+        synchronized(this.pcConnections){
+            for (Connection con:this.pcConnections){
+                if (con!=null && (conn==null || con!=conn)){
+                    con.notifyClousure();
+                }
             }
         }
     }

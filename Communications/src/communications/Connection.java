@@ -405,17 +405,20 @@ class Connection implements Runnable{
         } catch (InterruptedException ex) {
             System.out.println("sleep processDeviceType: "+ex.getMessage());
         }
-        this.closeSocket();
         this.running=false;
+        this.controller.nullifyConnection(this);
+        this.statusOk = false; //put to false just to stop serverhealth from reconnecting
+        this.closeSocket();
+        this.initiater.closingEvent(this.connectedMAC);
     }
     
     /**
      * Only used by Protocol to close a connection when notified
      */
     void processClousure(boolean running){
+        this.running=running;
         this.controller.nullifyConnection(this);
         this.closeSocket();
-        this.running=running;
         this.initiater.closingEvent(this.connectedMAC);
     }
     

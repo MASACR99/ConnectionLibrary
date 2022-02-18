@@ -62,9 +62,11 @@ class ClientConnector implements Runnable{
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
-            for (int i=0;i<controller.getPcConnections().size();i++){
-                if (controller.getPcConnections().get(i) != null && !controller.getPcConnections().get(i).isStatusOk()){
-                    this.tryToReconnect(controller.getPcConnections().get(i));
+            synchronized(controller.pcConnections){
+                for (int i=0;i<controller.pcConnections.size();i++){
+                    if (controller.pcConnections.get(i) != null && !controller.pcConnections.get(i).isStatusOk()){
+                        this.tryToReconnect(controller.pcConnections.get(i));
+                    }
                 }
             }
         }
