@@ -612,12 +612,8 @@ public class CommunicationController {
      * @param conn the connection to not close or null
      */
     public void closeAllConnections(Connection conn){
-        ArrayList<Connection> allConnections = this.getAllConnections();
-        for (Connection con:allConnections){
-            if (con!=null && (conn==null || con!=conn)){
-                con.notifyClousure();
-            }
-        }
+        this.closePcConnections(null);
+        this.closeMobileConnections(null);
     }
     
     /**
