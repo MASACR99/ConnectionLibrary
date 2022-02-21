@@ -67,9 +67,9 @@ class ClientConnector implements Runnable{
             synchronized(controller.pcConnections){
                 listPcConnections = controller.pcConnections;
             }
-            for (int i=0;i<controller.pcConnections.size();i++){
-                if (controller.pcConnections.get(i) != null && !controller.pcConnections.get(i).isStatusOk()){
-                    this.tryToReconnect(controller.pcConnections.get(i));
+            for (int i=0;i<listPcConnections.size();i++){
+                if (listPcConnections.get(i) != null && !listPcConnections.get(i).isStatusOk()){
+                    this.tryToReconnect(listPcConnections.get(i));
                 }
             }
         }
