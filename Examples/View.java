@@ -5,7 +5,6 @@ import communications.ConnectionInterface;
 import communications.ProtocolDataPacket;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -27,8 +26,11 @@ public class View extends JFrame{
     public static void main(String[] args) throws InterruptedException {
  
         CommunicationController con = new CommunicationController();
-        con.connectToIp(JOptionPane.showInputDialog("Inserta la IP: "));
         View view=new View(con);
+        String ip=JOptionPane.showInputDialog("Inserta la IP: ");
+        if (ip!=null && !ip.isEmpty()){
+            con.connectToIp(ip);
+        }
     }
     
     private CommunicationController controller;
@@ -48,8 +50,17 @@ public class View extends JFrame{
         this.chatPanel=new ChatPanel(controller);
         this.add(chatPanel); 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                controller.closeAllConnections(null);
+            }
+        });
+        
         this.setVisible(true);
     }
+    
 }
 
 class ChatPanel extends JPanel implements ConnectionInterface{
@@ -68,7 +79,7 @@ class ChatPanel extends JPanel implements ConnectionInterface{
     public ChatPanel(CommunicationController controller){
         
         this.controller=controller;
-        this.controller.addOnPacketListener(this);
+        this.controller.addAllListeners(this);
         JLabel texto=new JLabel("Online: ");
         JLabel n_nick=new JLabel("Nick: ");
         this.labelLocalMac=new JLabel(controller.getLocalMAC());
@@ -107,7 +118,7 @@ class ChatPanel extends JPanel implements ConnectionInterface{
     public void onConnectionAccept(String mac) {
         boolean repeated=false;
         int i=0;
-        while (repeated==false && i<macs.getItemCount()){
+        while (!repeated && i<macs.getItemCount()){
             if (mac.equals(macs.getItemAt(i).toString())){
                 repeated=true;
             }
@@ -116,6 +127,19 @@ class ChatPanel extends JPanel implements ConnectionInterface{
         
         if (!repeated){
             macs.addItem(mac);
+        }
+    }
+
+    @Override
+    public void onConnectionClosed(String mac) {
+        boolean repeated=false;
+        int i=0;
+        while (!repeated && i<macs.getItemCount()){
+            if (mac.equals(macs.getItemAt(i).toString())){
+                macs.removeItemAt(i);
+                repeated=true;
+            }
+            i++;
         }
     }
 }

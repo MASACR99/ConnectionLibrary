@@ -345,7 +345,6 @@ class Connection implements Runnable{
             packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
-            System.out.println(this.connectedMAC);
             this.initiater.connectionEvent(this.connectedMAC);
         } 
         else if (deviceType == PC){
