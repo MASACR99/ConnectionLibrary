@@ -564,7 +564,7 @@ public class CommunicationController {
      * connections in this moment.
      * @param conn the connection to not close or null
      */
-    void closePcConnections(Connection conn){
+    public void closePcConnections(Connection conn){
         synchronized(this.pcConnections){
             for (Connection con:this.pcConnections){
                 if (con!=null && (conn==null || con!=conn)){
@@ -579,7 +579,7 @@ public class CommunicationController {
      * connections in this moment.
      * @param conn the connection to not close or null
      */
-    void closeMobileConnections(Connection conn){
+    public void closeMobileConnections(Connection conn){
         synchronized(this.mobileConnections){
             for (Connection con:this.mobileConnections){
                 if (con!=null && (conn==null || con!=conn)){
@@ -594,7 +594,7 @@ public class CommunicationController {
      * connections in this moment.
      * @param conn the connection to not close or null
      */
-    void closeAllConnections(Connection conn){
+    public void closeAllConnections(Connection conn){
         ArrayList<Connection> allConnections = this.getAllConnections();
         for (Connection con:allConnections){
             if (con!=null && (conn==null || con!=conn)){
