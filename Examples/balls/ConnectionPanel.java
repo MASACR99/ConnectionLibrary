@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package balls;
 
@@ -20,8 +19,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
- *
- * @author masa
+ * This class extends a JPanel and has all the connections gui controls
+ * @author Joan Gil
  */
 public class ConnectionPanel extends JPanel{
     
@@ -163,7 +162,7 @@ public class ConnectionPanel extends JPanel{
             g.setColor(Color.green);
         }
         g.fillOval(this.getWidth()-diameter, this.getHeight()/2-diameter/2, diameter, diameter);
-        if(!main.haveDirection(4)){
+        if(!main.haveDirection(3)){
             g.setColor(Color.red);
         }else{
             g.setColor(Color.green);

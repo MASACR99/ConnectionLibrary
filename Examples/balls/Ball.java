@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package balls;
 
@@ -10,13 +9,14 @@ import static balls.HeyBalls.MAXRADIUS;
 import static balls.HeyBalls.MAXSPEED;
 import static balls.HeyBalls.MAXWEIGHT;
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.Random;
 
 /**
- *
- * @author masa
+ * A class ball stores all properties of it and has a method to calculate the movement
+ * @author Joan Gil
  */
-public class Ball {
+public class Ball implements Serializable{
     
     private int x;
     private int y;
@@ -37,6 +37,11 @@ public class Ball {
         speedY = ran.nextInt(10);
     }
     
+    /**
+     * Change speed X and Y by a defined amount
+     * @param accX Acceleration X axis
+     * @param accY Acceleration Y axis
+     */
     public void accelerate(int accX, int accY){
         speedX = speedX + accX;
         speedY = speedY + accY;
@@ -52,6 +57,10 @@ public class Ball {
         }
     }
     
+    /**
+     * Reverse the X direction and loose some speed
+     * @param loss If there's loos on impact
+     */
     public void reverseX(boolean loss){
         if (loss){
             if(speedX>0){
@@ -64,6 +73,10 @@ public class Ball {
         }
     }
     
+    /**
+     * Reverse the Y direction and loose some speed
+     * @param loss If there's loos on impact
+     */
     public void reverseY(boolean loss){
         if (loss){
             if(speedY>0){
@@ -120,32 +133,66 @@ public class Ball {
         return this.y;
     }
     
-    public int move(boolean border, boolean drag, int limitX, int limitY){
+    /**
+     * Logic for the movement of a ball. Also does the logic for setting up the
+     * position of the ball before sending it via socket.
+     * @param border Boolean if there's borders around where there aren't any connections
+     * @param main Main class to read the live connections
+     * @param drag Boolean if there's drag, which means balls loose speed on impact against borders
+     * @param limitX Max X axis in pixels
+     * @param limitY Max Y axis in pixels
+     * @return Int 0 if the ball doesn't leave the screen, a number from 1-4 based on which direction it leaves
+     */
+    public int move(boolean border, HeyBalls main, boolean drag, int limitX, int limitY){
         int retVal = 0;
         if(border){
-            if(this.getX() + this.getRadius() + this.getSpeedX() >=limitX || this.getX()+this.getSpeedX() <= 0){
-                this.reverseX(drag);
+            if(this.getX() + this.getRadius() + this.getSpeedX() >= limitX){
+                if(!main.haveDirection(2)){
+                    this.reverseX(drag);
+                }else{
+                    this.setX(0);
+                    retVal = 2;
+                }
+            }else if(this.getX()+this.getSpeedX() <= 0){
+                if(!main.haveDirection(4)){
+                    this.reverseX(drag);
+                }else{
+                    this.setX(limitX-this.getRadius());
+                    retVal = 4;
+                }
             }
-            if(this.getY() + this.getRadius() + this.getSpeedY() >=limitY || this.getY()+this.getSpeedY() <= 0){
-                this.reverseY(drag);
+            if(this.getY() + this.getRadius() + this.getSpeedY() >= limitY){
+                if(!main.haveDirection(3)){
+                    this.reverseY(drag);
+                }else{
+                    this.setY(0);
+                    retVal = 3;
+                }
+            }else if(this.getY()+this.getSpeedY() <= 0){
+                if(!main.haveDirection(1)){
+                    this.reverseY(drag);
+                }else{
+                    this.setY(limitY-this.getRadius());
+                    retVal = 1;
+                }
             }
             this.setX(this.getX() + this.getSpeedX());
             this.setY(this.getY() + this.getSpeedY());
         }else{
-            if(this.getX() + this.getRadius() + this.getSpeedX() >=limitX){
+            if(this.getX() + this.getRadius() + this.getSpeedX() >= limitX){
                 this.setX(0);
-                retVal = 4;
+                retVal = 2;
             }else if(this.getX() + this.getRadius() + this.getSpeedX() <= 0){
                 this.setX(limitX-this.getRadius());
-                retVal = 2;
+                retVal = 4;
             }
             this.setX(this.getX() + this.getSpeedX());
             if(this.getY() + this.getRadius() + this.getSpeedY() >= limitY){
                 this.setY(0);
-                retVal = 1;
+                retVal = 3;
             }else if(this.getY() + this.getRadius() + this.getSpeedY() <= 0){
                 this.setY(limitY-this.getRadius());
-                retVal = 3;
+                retVal = 1;
             }
             this.setY(this.getY() + this.getSpeedY());
         }

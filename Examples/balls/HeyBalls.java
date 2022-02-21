@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package balls;
 
@@ -15,11 +14,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 /**
- *
- * @author masa
+ * Main class that controls the execution of the program
+ * @author Joan Gil
  */
 public class HeyBalls implements ConnectionInterface{
 
+    //Define all static variables
     public final static int MAXSPEED = 2;
     public final static int LOSS = 1;
     public final static int GRAVITY = 1;
@@ -29,27 +29,29 @@ public class HeyBalls implements ConnectionInterface{
     public final static int MINRADIUS = 10;
     public final static int MAXFPS = 60;
     public final static double MINWEIGHT = 0.1;
+    public static int frames = 0;
+    
     public CommunicationController controller;
     public HashMap<String,Integer> connections = new HashMap();
-    private ScreenManager managment;
-    public static int frames = 0;
+    
+    private ScreenManager managment;    
     private int nextDirection = 0;
     
     public HeyBalls(){
         // Call screen manager to begin program
-        // Screen manager might be 1 gravity toggle button, boundary button, number of balls and maybe randomizer
         long time1 = 0;
         long time2 = 0;
         float mspf = 1000/MAXFPS;
         controller = new CommunicationController(42069,2);
+        controller.addAllListeners(this);
         Graphics g;
         ImageIcon pink = new ImageIcon("/home/masa/Downloads/pink.jpg");
         JFrame frame = new JFrame("Hey balls");
+        frame.setSize(500,500);
         frame.setLayout(new BorderLayout());
         managment = new ScreenManager(this);
         frame.setIconImage(pink.getImage());
         frame.add(managment);
-        frame.pack();
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         while(true){
@@ -64,6 +66,11 @@ public class HeyBalls implements ConnectionInterface{
         }
     }
     
+    /**
+     * Returns the mac address of the specified direction
+     * @param direction Integer between 1 and 4, 1 being north,2 east...
+     * @return Mac of the connection
+     */
     public String getInfo(int direction){
         for(String e : connections.keySet()){
             if(connections.get(e) == direction){
@@ -73,6 +80,11 @@ public class HeyBalls implements ConnectionInterface{
         return null;
     }
     
+    /**
+     * Returns true if there's a connection on that direction
+     * @param direction Integer between 1 and 4, 1 being north,2 east...
+     * @return True if connection aiming in the direction exists, false otherwise
+     */
     public boolean haveDirection(int direction){
         for(String e : connections.keySet()){
             if(connections.get(e) == direction){
@@ -82,6 +94,11 @@ public class HeyBalls implements ConnectionInterface{
         return false;
     }
     
+    /**
+     * Connect to the specified ip with the direction also specified
+     * @param ip Ipv4 addres in string format (XXX.XXX.XXX.XXX)
+     * @param direction Integer between 1 and 4, 1 being north,2 east...
+     */
     public void connectTo(String ip, int direction){
         if(!haveDirection(direction)){
             System.out.println("Connecting to: " + ip);
@@ -92,6 +109,10 @@ public class HeyBalls implements ConnectionInterface{
         }
     }
     
+    /**
+     * Disconnects from the specified mac address
+     * @param mac Mac address to disconnect from
+     */
     public void disconnect(String mac){
         controller.disconnect(mac);
     }
@@ -103,6 +124,11 @@ public class HeyBalls implements ConnectionInterface{
         HeyBalls main = new HeyBalls();
     }
     
+    /**
+     * Send a ball object from this simulation to the simulation of the neighbor
+     * @param direction Integer between 1 and 4, 1 being north,2 east...
+     * @param ball Object Ball already defined
+     */
     public void sendBall(int direction, Ball ball){
         for(String e : connections.keySet()){
             if(connections.get(e) == direction){
@@ -111,27 +137,36 @@ public class HeyBalls implements ConnectionInterface{
         }
     }
     
+    /**
+     * Send a neighbor the position where you are.
+     * @param mac Mac address of the neighbor
+     * @param direction The direction of the neighbor from you
+     */
     public void sendPosition(String mac, int direction){
         controller.sendMessage(controller.createPacket(mac, 420, direction));
     }
-    
-    public boolean isDirectionValid(int direction){
-        for(String e : connections.keySet()){
-            if(connections.get(e) == direction){
-                return true;
-            }
-        }
-        return false;
-    }
 
+    /**
+     * Event called by the connection library when a packet is received
+     * @param packet Packet received
+     */
     @Override
     public void onMessageReceived(ProtocolDataPacket packet) {
+        System.out.println("Received packet");
         switch(packet.getId()){
             case 69:
+                System.out.println("Packet 69");
                 managment.addBall((Ball)packet.getObject());
                 break;
             case 420:
-                connections.replace(packet.getSourceID(), (int)packet.getObject());
+                System.out.println("Packet 420");
+                int retVal = (int)packet.getObject();
+                if(retVal < 3){
+                    retVal += 2;
+                }else{
+                    retVal -= 2;
+                }
+                connections.replace(packet.getSourceID(), retVal);
                 break;
             default:
                 
@@ -139,8 +174,14 @@ public class HeyBalls implements ConnectionInterface{
         }
     }
 
+    /**
+     * Event called when a connection is fully accepted and the handshake
+     * has been done
+     * @param mac Mac address accepted
+     */
     @Override
     public void onConnectionAccept(String mac) {
+        System.out.println("Connection accepted");
         connections.put(mac, nextDirection);
         if(nextDirection != 0){
             this.sendPosition(mac,nextDirection);
@@ -148,8 +189,13 @@ public class HeyBalls implements ConnectionInterface{
         nextDirection = 0;
     }
 
+    /**
+     * Event called when a connection is fully closed
+     * @param mac Mac address of the disconnecting peer
+     */
     @Override
     public void onConnectionClosed(String mac) {
+        System.out.println("Connection closed");
         connections.remove(mac);
     }
 }

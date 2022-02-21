@@ -1,7 +1,6 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package balls;
 
@@ -11,15 +10,14 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 /**
- *
- * @author masa
+ * JPanel that has 2 panels on a tabbed pane
+ * @author Joan Gil
  */
 public class ScreenManager extends JPanel{
     
     private BallsPanel jPanel1;
     private ConnectionPanel jPanel2;
     private HeyBalls heyBalls;
-    
     
     public ScreenManager(HeyBalls heyBalls){
         //Call super to also initialize default JPanel
@@ -43,6 +41,10 @@ public class ScreenManager extends JPanel{
         this.add(tabs,c);
     }
     
+    /**
+     * Add a ball of object Ball to the simulation
+     * @param ball Already defined object Ball
+     */
     public void addBall(Ball ball){
         jPanel1.addBall(ball);
     }

@@ -1,34 +1,30 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This project is given as is with license GNU/GPL-3.0. For more info look
+ * on github
  */
 package balls;
 
 import static balls.HeyBalls.MAXBALLS;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- *
- * @author masa
+ * JPanel with the simulation and the different ways of controlling it via gui
+ * @author Joan Gil
  */
 public class BallsPanel extends JPanel{
     
     private HeyBalls heyBalls;
     private Simulation sim;
     private JSpinner balls;
+    private boolean change = false;
     
     public BallsPanel(HeyBalls main){
         super();
@@ -36,13 +32,16 @@ public class BallsPanel extends JPanel{
         construct();
     }
     
+    /**
+     * Fills the JPanel with stuff
+     */
     public void construct(){
         //Define everything related to the panel
         GridBagConstraints c = new GridBagConstraints();
         this.setLayout(new GridBagLayout());
         
         //Define the different buttons and thingies
-        sim = new Simulation(this.heyBalls);
+        sim = new Simulation(this.heyBalls,this);
         JCheckBox gravity = new JCheckBox("Gravity?");
         JCheckBox borders = new JCheckBox("Borders?");
         JCheckBox dragg = new JCheckBox("Drag?");
@@ -71,7 +70,11 @@ public class BallsPanel extends JPanel{
         balls.addChangeListener(new ChangeListener(){
             @Override
             public void stateChanged(ChangeEvent e){
-                sim.setBalls((int)balls.getValue());
+                if(!change){
+                    sim.setBalls((int)balls.getValue());
+                }else{
+                    change = false;
+                }
             }
         });
         
@@ -113,9 +116,22 @@ public class BallsPanel extends JPanel{
         this.add(balls,c);
     }
 
+    /**
+     * Add a ball of object Ball to the simulation
+     * @param ball Object ball already created
+     */
     void addBall(Ball ball) {
+        change = true;
         balls.setValue((int)balls.getValue()+1);
-        sim.setBalls((int)balls.getValue());
+        sim.addBall(ball);
+    }
+    
+    /**
+     * Reduce by one the spinner value
+     */
+    public void minusOne(){
+        change = true;
+        balls.setValue((int)balls.getValue()-1);
     }
     
     @Override
