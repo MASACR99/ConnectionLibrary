@@ -125,11 +125,14 @@ public class CommunicationController {
         }
         
         this.localMAC=this.getMac();
-        try {
-            this.localIP=InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            System.out.println("Error getting ip: "+ex.getMessage());
-        }
+    }
+
+    public InetAddress getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(InetAddress localIP) {
+        this.localIP = localIP;
     }
     
     public String getLocalMAC() {

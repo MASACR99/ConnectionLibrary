@@ -49,6 +49,10 @@ class Connection implements Runnable{
         this.serverHealth = new ServerHealth(controller, this);
         this.initiater = initiater;
         this.connectionType=CLIENT;
+        
+        if (controller.getLocalIP()==null){
+            controller.setLocalIP(this.socket.getLocalAddress());
+        }
     }
     
     /**
@@ -423,6 +427,7 @@ class Connection implements Runnable{
     void closeSocket(){
         try {
             System.out.println("Closing sockets");
+            this.statusOk = false;
             this.socket.close();
             this.input.close();
             this.output.close();
