@@ -8,6 +8,7 @@ import static communications.CommunicationController.MAXATTEMPTS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -62,11 +63,13 @@ class ClientConnector implements Runnable{
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
+            ArrayList <Connection> listPcConnections = null;
             synchronized(controller.pcConnections){
-                for (int i=0;i<controller.pcConnections.size();i++){
-                    if (controller.pcConnections.get(i) != null && !controller.pcConnections.get(i).isStatusOk()){
-                        this.tryToReconnect(controller.pcConnections.get(i));
-                    }
+                listPcConnections = controller.pcConnections;
+            }
+            for (int i=0;i<controller.pcConnections.size();i++){
+                if (controller.pcConnections.get(i) != null && !controller.pcConnections.get(i).isStatusOk()){
+                    this.tryToReconnect(controller.pcConnections.get(i));
                 }
             }
         }
