@@ -242,12 +242,26 @@ public class CommunicationController {
      * @param con String with the mac of a connection
      */
     public void disconnect(String mac){
-        ArrayList<Connection> joinedMacs = this.getAllConnections();
-        for(Connection conn : joinedMacs){
-            if(conn != null){
-                if(conn.getConnectedMAC().equals(mac)){
-                    conn.notifyClousure();
-                    break;
+        boolean found = false;
+        synchronized(this.pcConnections){
+            for(Connection conn : this.pcConnections){
+                if(conn != null){
+                    if(conn.getConnectedMAC().equals(mac)){
+                        conn.notifyClousure();
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found){
+                for(Connection conn : this.mobileConnections){
+                    if(conn != null){
+                        if(conn.getConnectedMAC().equals(mac)){
+                            conn.notifyClousure();
+                            found = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
