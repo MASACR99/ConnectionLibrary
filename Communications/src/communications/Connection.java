@@ -534,7 +534,7 @@ class Connection implements Runnable{
         //this.controller.closeAllConnections(this);
         //ALOMILLO POSA UN SLEEP
         //this.processClousure(true);
-        this.controller.closeAllConnections(null);
+        this.controller.closePcConnections(null);
         this.controller.createNewConnections(ips, packet.getSourceID());
         //this.running=false;
     }
@@ -543,7 +543,7 @@ class Connection implements Runnable{
         ArrayList <InetAddress> ips=(ArrayList <InetAddress>)packet.getObject();
         //this.controller.closeAllConnections(this);
         //this.processClousure(true);
-        this.controller.closeAllConnections(null);
+        this.controller.closePcConnections(null);
         this.controller.createNewConnections(ips, packet.getSourceID());
         //this.running=false;
     }
