@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -148,7 +149,7 @@ class Connection implements Runnable{
         LookupUpdater lookUpd = new LookupUpdater(this.controller);
         Thread lookupUpdaterThread = new Thread(lookUpd);
         lookupUpdaterThread.start();
-        initiater.lookupEvent((ArrayList<String>) lookup.keySet());
+        initiater.lookupEvent(new ArrayList<String>(lookup.keySet()));
     }
     
     /**
