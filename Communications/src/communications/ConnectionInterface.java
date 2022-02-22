@@ -4,6 +4,8 @@
  */
 package communications;
 
+import java.util.ArrayList;
+
 /**
  * Interface to override a method that is called as an event when a packet is received
  * outside the protocol required to run the backend.
@@ -13,4 +15,5 @@ public interface ConnectionInterface {
     void onMessageReceived(ProtocolDataPacket packet);
     void onConnectionAccept(String mac);
     void onConnectionClosed(String mac);
+    void onLookupUpdate(ArrayList <String> macsList);
 }
