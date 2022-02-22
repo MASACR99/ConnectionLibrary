@@ -160,4 +160,11 @@ class ChatPanel extends JPanel implements ConnectionInterface{
             i++;
         }
     }
+
+    @Override
+    public void onLookupUpdate(ArrayList<String> macs) {
+        for (String mac:macs){
+            this.onConnectionAccept(mac);
+        }
+    }
 }
