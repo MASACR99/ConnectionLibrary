@@ -80,9 +80,7 @@ class Connection implements Runnable{
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
         if(saved){
-            LookupUpdater lookUpd = new LookupUpdater(this.controller);
-            Thread lookupUpdaterThread = new Thread(lookUpd);
-            lookupUpdaterThread.start();
+            updateNeighbors();
         }
     }
     
@@ -112,9 +110,7 @@ class Connection implements Runnable{
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
         if(saved){
-            LookupUpdater lookUpd = new LookupUpdater(this.controller);
-            Thread lookupUpdaterThread = new Thread(lookUpd);
-            lookupUpdaterThread.start();
+            updateNeighbors();
         }
     }
     
@@ -140,10 +136,19 @@ class Connection implements Runnable{
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
         if(saved){
-            LookupUpdater lookUpd = new LookupUpdater(this.controller);
-            Thread lookupUpdaterThread = new Thread(lookUpd);
-            lookupUpdaterThread.start();
+            updateNeighbors();
         }
+    }
+    
+    /**
+     * Sends a message to all neighbors that the lookup has been updated 
+     * and sends them our lookup. Also calls the onLookupUpdate() event
+     */
+    private void updateNeighbors(){
+        LookupUpdater lookUpd = new LookupUpdater(this.controller);
+        Thread lookupUpdaterThread = new Thread(lookUpd);
+        lookupUpdaterThread.start();
+        initiater.lookupEvent((ArrayList<String>) lookup.keySet());
     }
     
     /**

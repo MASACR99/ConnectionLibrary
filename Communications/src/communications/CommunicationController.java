@@ -167,6 +167,15 @@ public class CommunicationController {
     }
     
     /**
+     * Adds a ConnectionInterface method to the initiater to be called 
+     * as an event when a connection has it's lookup updated
+     * @param conn 
+     */
+    public void addOnLookupListener(ConnectionInterface conn){
+        initiater.addLookupListener(conn);
+    }
+    
+    /**
      * Adds all of the above listeners at the same time
      * @param conn 
      */
@@ -174,6 +183,7 @@ public class CommunicationController {
         initiater.addPacketListener(conn);
         initiater.addConnectionListener(conn);
         initiater.addClosingListener(conn);
+        initiater.addLookupListener(conn);
     }
     
     /**

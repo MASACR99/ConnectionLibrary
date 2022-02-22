@@ -15,6 +15,7 @@ class ConnectionInterfaceInitiater {
     private ArrayList<ConnectionInterface> packetListeners = new ArrayList<>();
     private ArrayList<ConnectionInterface> connectionListeners = new ArrayList<>();
     private ArrayList<ConnectionInterface> closingListeners = new ArrayList<>();
+    private ArrayList<ConnectionInterface> loookupListeners = new ArrayList<>();
     
     void addPacketListener(ConnectionInterface methodToAdd){
         packetListeners.add(methodToAdd);
@@ -26,6 +27,10 @@ class ConnectionInterfaceInitiater {
     
     void addClosingListener(ConnectionInterface methodToAdd){
         closingListeners.add(methodToAdd);
+    }
+    
+    void addLookupListener(ConnectionInterface methodToAdd){
+        loookupListeners.add(methodToAdd);
     }
     
     /**
@@ -55,6 +60,16 @@ class ConnectionInterfaceInitiater {
     synchronized void closingEvent(String mac){
         for(ConnectionInterface conn : closingListeners){
             conn.onConnectionClosed(mac);
+        }
+    }
+    
+    /**
+     * Called when a connection has it's lookup updated
+     * @param mac Mac address of the peer to be disconnected
+     */
+    synchronized void lookupEvent(ArrayList<String> macs){
+        for(ConnectionInterface conn : closingListeners){
+            conn.onLookupUpdate(macs);
         }
     }
 }
