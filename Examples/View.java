@@ -5,6 +5,8 @@ import communications.ConnectionInterface;
 import communications.ProtocolDataPacket;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -26,11 +28,11 @@ public class View extends JFrame{
     public static void main(String[] args) throws InterruptedException {
  
         CommunicationController con = new CommunicationController();
-        View view=new View(con);
         String ip=JOptionPane.showInputDialog("Inserta la IP: ");
         if (ip!=null && !ip.isEmpty()){
             con.connectToIp(ip);
         }
+        View view=new View(con);
     }
     
     private CommunicationController controller;
@@ -54,7 +56,12 @@ public class View extends JFrame{
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                controller.closeAllConnections(null);
+                try{
+                    controller.closeAllConnections(null);
+                    
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }
             }
         });
         
@@ -83,7 +90,18 @@ class ChatPanel extends JPanel implements ConnectionInterface{
         JLabel texto=new JLabel("Online: ");
         JLabel n_nick=new JLabel("Nick: ");
         this.labelLocalMac=new JLabel(controller.getLocalMAC());
-        this.macs=new JComboBox();
+        
+        ArrayList <String> connectedMacs=this.controller.getConnectedMacs();
+        if (connectedMacs.size()>0){
+            String [] macsArray=new String[connectedMacs.size()];
+            for (int i=0; i<connectedMacs.size();i++){
+                macsArray[i]=connectedMacs.get(i);
+            }
+            this.macs=new JComboBox(macsArray);
+        } else {
+            this.macs=new JComboBox();
+        }
+        
         this.chat=new JTextArea(12,25);
         this.campo=new JTextField(20);
         this.botonEnviar=new JButton("Enviar");
