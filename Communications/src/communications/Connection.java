@@ -61,8 +61,10 @@ class Connection implements Runnable{
      * precise results
      * @param neighborMap Received hashmap of the neighbor
      */
-    void addToLookup(HashMap<String,Integer> neighborMap){
+    void updateLookup(HashMap<String,Integer> neighborMap){
         boolean saved = false;
+        //Update the lookup adding the macs we didn't have 
+        //and updating the number of hops there's to a target
         for(String str : neighborMap.keySet()){
             if(!lookup.containsKey(str)){
                 //Notify and start a thread that will send a message to all
@@ -70,12 +72,20 @@ class Connection implements Runnable{
                 saved = true;
                 lookup.put(str, neighborMap.get(str)+1);
             }else{
-                if(lookup.get(str) > (neighborMap.get(str)+1)){
+                if(lookup.get(str) != (neighborMap.get(str)+1)){
                     //Notify and start a thread that will send a message to all
                     //neighbors with the updated lookup
                     saved = true;
                     lookup.replace(str, neighborMap.get(str)+1);
                 }
+            }
+        }
+        //If the neighbor lost complete connection to a mac we thought he
+        //had we must remove it from out map
+        for(String str : lookup.keySet()){
+            if(!neighborMap.containsKey(str)){
+                lookup.remove(str);
+                saved = true;
             }
         }
         //To avoid spending processing time instanciating stuff we put it last inside
@@ -477,7 +487,7 @@ class Connection implements Runnable{
      * @param packetReceived Packet received via connection
      */
     void receiveLookupTable(ProtocolDataPacket packetReceived){
-        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
+        this.updateLookup((HashMap<String,Integer>)packetReceived.getObject());
         this.send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,6,this.controller.joinMaps()));
     }
     
@@ -487,7 +497,7 @@ class Connection implements Runnable{
      * @param packetReceived Packet received via connection
      */
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
-        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
+        this.updateLookup((HashMap<String,Integer>)packetReceived.getObject());
         send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,true));
     }
     
@@ -496,7 +506,7 @@ class Connection implements Runnable{
      * @param packetReceived  Packet received via connection
      */
     void updateLookup(ProtocolDataPacket packetReceived){
-        this.addToLookup((HashMap<String,Integer>)packetReceived.getObject());
+        this.updateLookup((HashMap<String,Integer>)packetReceived.getObject());
     }
     
     /**
@@ -504,12 +514,10 @@ class Connection implements Runnable{
      * unless it finds a peer that has space for a connection.
      */
     private void startAskingMacs(){
-        for(String mac : this.controller.getConnectedMacs()){
-            ArrayList<String> macList = new ArrayList<String>();
-            macList.add(this.socket.getInetAddress().toString());
-            macList.add(this.controller.getLocalMAC());
-            controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
-        }
+        ArrayList<String> macList = new ArrayList<String>();
+        macList.add(this.socket.getInetAddress().toString());
+        macList.add(this.controller.getLocalMAC());
+        controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),controller.getConnectedMacs().get(0),10,macList));
     }
     
     /**
@@ -525,6 +533,7 @@ class Connection implements Runnable{
             for(String mac : this.controller.getConnectedMacs()){
                 if(!macList.contains(mac)){
                     controller.sendPacket(null,new ProtocolDataPacket(this.controller.getLocalMAC(),mac,10,macList));
+                    break;
                 }
             }
         }else{
