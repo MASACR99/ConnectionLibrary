@@ -91,6 +91,7 @@ class ClientConnector implements Runnable{
                 Socket socket=new Socket(conn.getIp(),controller.PORT);
                 conn.setSocket(socket);
                 conn.setStatusOk(true);
+                conn.setServerHealth(new ServerHealth(this.controller,conn));
                 hash.remove(conn.getIp());
                 System.out.println("Reconnected");
             } catch (IOException ex) {
