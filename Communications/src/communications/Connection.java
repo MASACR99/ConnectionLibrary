@@ -11,7 +11,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -47,7 +46,6 @@ class Connection implements Runnable{
         this.input = new ObjectInputStream(this.socket.getInputStream());
         this.statusOk=true;
         this.lastMessageReceived = System.currentTimeMillis();
-        this.serverHealth = new ServerHealth(controller, this);
         this.initiater = initiater;
         this.connectionType=CLIENT;
         
@@ -156,8 +154,12 @@ class Connection implements Runnable{
      * and sends them our lookup. Also calls the onLookupUpdate() event
      */
     private void updateNeighbors(){
-        LookupUpdater lookUpd = new LookupUpdater(this.controller);
-        Thread lookupUpdaterThread = new Thread(lookUpd);
+        Thread lookupUpdaterThread = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                controller.sendToNeighbors(13, controller.joinMaps());
+            }
+        });
         lookupUpdaterThread.start();
         initiater.lookupEvent(new ArrayList<String>(lookup.keySet()));
     }
@@ -251,7 +253,8 @@ class Connection implements Runnable{
                 if (this.statusOk){
                     ProtocolDataPacket received=receive();
                     //If the packet hasn't exceeded the max number of allowed jumps
-                    if(received.getHops() < 2 || received.getHops() <= (this.lookup.size()*2)){
+                    //TO DO: check if the received object is not null?
+                    if(received !=null && (received.getHops() < 2 || received.getHops() <= (this.lookup.size()*2))){
                         //If the received packet id isn't one of the protocol
                         //and the target MAC is equals to ours
                         //we activate the connectionEvent
@@ -378,11 +381,7 @@ class Connection implements Runnable{
                 //First we get the hashmap with the macs and the connections to get to those
                 //Then we start asking our first neighbour
                 this.startAskingMacs();
-                packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,false);
-                send(packet);
-                Thread.sleep(1000);
-                this.closeSocket();
-                this.running=false;
+                this.notifyClousure();
             } catch(Exception ex){
                 System.out.println("sleep processDeviceType: "+ex.getMessage());
                 this.closeSocket();
@@ -398,14 +397,9 @@ class Connection implements Runnable{
      * be validated.
      * @param packetReceived This is the last packet received from the starting handshake. 
      */
-    void processValidation(ProtocolDataPacket packetReceived){
-        if ((boolean)packetReceived.getObject()){
-            this.controller.addPcConnection(this);
-            this.initiater.connectionEvent(this.connectedMAC);
-        } else {
-            this.closeSocket();
-            this.running=false;
-        }
+    void processValidation(){
+        this.controller.addPcConnection(this);
+        this.initiater.connectionEvent(this.connectedMAC);
     }
     
     /**
