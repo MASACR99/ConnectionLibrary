@@ -31,7 +31,7 @@ class Protocol {
         this.protocolList.add(new ProtocolDescription(6, "Receive Lookup Table2", "Hashmap<String,Integer>"));
         //antes de validar pasa lookup tables
         //conectedMac pasarles a sa lookup quan s'obri sa conexio
-        this.protocolList.add(new ProtocolDescription(7, "Validate connection", "Boolean"));
+        this.protocolList.add(new ProtocolDescription(7, "Validate connection", "Null"));
         this.protocolList.add(new ProtocolDescription(8, "Close connection", "Null"));
         this.protocolList.add(new ProtocolDescription(9, "Traceroute", "ArrayList <String>"));
         this.protocolList.add(new ProtocolDescription(10, "Available Connections", "ArrayList <String>"));
@@ -42,7 +42,8 @@ class Protocol {
     }
     
     boolean addCmd(int id, ProtocolDescription desc){
-        if(this.nonUsableIDs.add(id) && id > this.lengthRequiredProtocol){
+        if(!this.nonUsableIDs.contains(id) && id > this.lengthRequiredProtocol){
+            this.nonUsableIDs.add(id);
             this.protocolList.add(desc);
             return true;
         }else{
@@ -69,10 +70,6 @@ class Protocol {
     
     ProtocolDataPacket constructPacket(int id, String source, String target, Object object){
         return new ProtocolDataPacket(source, target, id, object);
-    }
-    
-    ProtocolDataPacket constructPacket(int id, int hops, String source, String target, Object object){
-        return new ProtocolDataPacket(source, target, hops, id, object);
     }
     
     boolean processMessage(Connection conn,ProtocolDataPacket packet){
@@ -107,7 +104,7 @@ class Protocol {
                         break;
                         
                     case 7:
-                        conn.processValidation(packet);
+                        conn.processValidation();
                         break;
                         
                     case 8:
