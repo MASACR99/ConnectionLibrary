@@ -542,7 +542,7 @@ class Connection implements Runnable{
         //ALOMILLO POSA UN SLEEP
         //this.processClousure(true);
         this.controller.closePcConnections(null);
-        this.controller.createNewConnections(ips, packet.getSourceID());
+        this.controller.createNewConnections(ips, this.getIp());
         //this.running=false;
     }
     
@@ -551,7 +551,7 @@ class Connection implements Runnable{
         //this.controller.closeAllConnections(this);
         //this.processClousure(true);
         this.controller.closePcConnections(null);
-        this.controller.createNewConnections(ips, packet.getSourceID());
+        this.controller.createNewConnections(ips, this.getIp());
         //this.running=false;
     }
 }

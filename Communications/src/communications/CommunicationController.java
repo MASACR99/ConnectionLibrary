@@ -631,9 +631,9 @@ public class CommunicationController {
      * @param ips ArrayList of ips in InetAddress form
      * @param changerPositionIp ip of the pc that are switching positions with you
      */
-    void createNewConnections(ArrayList <InetAddress> ips, String changerPositionIp){
+    void createNewConnections(ArrayList <InetAddress> ips, InetAddress changerPositionIp){
         for (InetAddress ip:ips){
-            if (localIP!=ip){
+            if (!localIP.getHostAddress().equals(ip.getHostAddress())){
                 this.connectToIp(ip);
             } else {
                 this.connectToIp(changerPositionIp);
