@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -63,7 +62,7 @@ public class CommunicationController {
         PORT = port;
         SERVERHEALTHMAXWAIT = 1500;
         ACKMAXWAIT = 2500;
-        if(maxPc <= 1){
+        if(maxPc == 1){
             this.maxPc = 2;
         }else{
             this.maxPc = maxPc;
@@ -82,7 +81,7 @@ public class CommunicationController {
         PORT = port;
         SERVERHEALTHMAXWAIT = serverWait;
         ACKMAXWAIT = ackWait;
-        if(maxPc <= 1){
+        if(maxPc == 1){
             this.maxPc = 2;
         }else{
             this.maxPc = maxPc;
@@ -97,11 +96,12 @@ public class CommunicationController {
         
         
         protocol = new Protocol();
-        
-        for(int i = 0; i < maxPc; i++){
-            Connection conn = null;
-            synchronized(this.pcConnections){
-                pcConnections.add(conn);
+        if(maxPc != 0){
+            for(int i = 0; i < maxPc; i++){
+                Connection conn = null;
+                synchronized(this.pcConnections){
+                    pcConnections.add(conn);
+                }
             }
         }
         
@@ -395,13 +395,17 @@ public class CommunicationController {
      */
     boolean availableConnections(){
         boolean available = false;
-        for(int i = 0; i < maxPc && available == false; i++){
-            synchronized(this.pcConnections){
-                if(pcConnections.get(i) == null){
-                    available = true;
-                }else{
-                    if(pcConnections.get(i).getIp() == null && pcConnections.get(i).getSocket() == null){
+        if(maxPc == 0){
+            available = true;
+        }else{
+            for(int i = 0; i < maxPc && available == false; i++){
+                synchronized(this.pcConnections){
+                    if(pcConnections.get(i) == null){
                         available = true;
+                    }else{
+                        if(pcConnections.get(i).getIp() == null && pcConnections.get(i).getSocket() == null){
+                            available = true;
+                        }
                     }
                 }
             }
@@ -639,5 +643,36 @@ public class CommunicationController {
                 this.connectToIp(changerPositionIp);
             }
         }
+    }
+    /**
+     * Sends the ip to connect to to all the connected peers
+     * @param ip Neighbor ip where the other peers will connect
+     */
+    void starConnection(Connection con){
+        //this won't work probably, connection will have to send a packet to the neighbor and
+        //then do something LIKE this to connect
+        ArrayList<String> macList = new ArrayList<>();
+        for(String mac : con.getLookup().keySet()){
+            macList.add(mac);
+        }
+        synchronized(this.pcConnections){
+            for(Connection conn : this.pcConnections){
+                //Since all connections will have the same maxPc number
+                //we can assure that this message will simply just connect to
+                //the ip
+                if(macList.contains(conn.getConnectedMAC())){
+                    macList.remove(conn.getConnectedMAC());
+                }
+            }
+        }
+        //This arrayList will have all the mac addresses that we found in our updated
+        //lookup and we are not connected to
+        for(String mac : macList){
+            con.send(new ProtocolDataPacket(this.localMAC,mac,10, this.localIP));
+        }
+    }
+    
+    int getMaxPc(){
+        return this.maxPc;
     }
 }

@@ -83,7 +83,7 @@ class Protocol {
                         conn.answerTestRequest(packet);
                         break;
 
-                    case 2: 
+                    case 2:
                         conn.getServerHealth().checkTestAnswer(packet);
                         break;
 
@@ -117,7 +117,8 @@ class Protocol {
                         
                     case 10:
                         //connection asks to controller if it has available connections
-                        //returns an 11 with a boolean
+                        //connects to ip if there's space for another connection
+                        //sends another 10 to another mac
                         conn.checkAvailability(packet);
                         break;
                         

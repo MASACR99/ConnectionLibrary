@@ -86,6 +86,9 @@ class Connection implements Runnable{
                 saved = true;
             }
         }
+        if(controller.getMaxPc() == 0){
+            controller.starConnection(this);
+        }
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
         if(saved){
@@ -253,7 +256,6 @@ class Connection implements Runnable{
                 if (this.statusOk){
                     ProtocolDataPacket received=receive();
                     //If the packet hasn't exceeded the max number of allowed jumps
-                    //TO DO: check if the received object is not null?
                     if(received !=null && (received.getHops() < 2 || received.getHops() <= (this.lookup.size()*2))){
                         //If the received packet id isn't one of the protocol
                         //and the target MAC is equals to ours
@@ -404,7 +406,7 @@ class Connection implements Runnable{
     
     /**
      * Notify to the other side of the socket that this connection is going to be
-     * closed and this socket don't want to reconect. After that and after a wait
+     * closed and this socket don't want to reconnect. After that and after a wait
      * of 1 second this connections closes.
      */
     void notifyClousure(){
@@ -492,7 +494,7 @@ class Connection implements Runnable{
      */
     void receiveLookupTable2(ProtocolDataPacket packetReceived){
         this.updateLookup((HashMap<String,Integer>)packetReceived.getObject());
-        send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,true));
+        send(new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,7,null));
     }
     
     /**
