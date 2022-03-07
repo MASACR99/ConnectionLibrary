@@ -217,6 +217,24 @@ public class CommunicationController {
     }
     
     /**
+     * Adds a new protocol to the protocol list and returns true if the id is valid
+     * false otherwise
+     * @param id
+     * @param description
+     * @param expectedVariableType
+     * @return True if the id is valid, false otherwise
+     */
+    public boolean addNewProtocol(int id, String description, String expectedVariableType){
+        return protocol.addCmd(id, new ProtocolDescription(id, description, expectedVariableType));
+    }
+    
+    public String getProtocolDescription(int id){
+        ProtocolDescription description = protocol.getProtocol(id);
+        String desc = description.getDescription() + ". Expected return type: " + description.getExpectedReturn();
+        return desc;
+    }
+    
+    /**
      * Checks if the packet is valid and also sends it to resend to send it via the fastest path available.
      * Also overrides the packet source MAC to use this one
      * @param packet A packet to be checked and sent
