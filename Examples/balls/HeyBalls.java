@@ -7,8 +7,9 @@ package balls;
 import communications.CommunicationController;
 import communications.ConnectionInterface;
 import communications.ProtocolDataPacket;
-import java.awt.BorderLayout;
-import java.awt.Graphics;
+
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -29,14 +30,16 @@ public class HeyBalls implements ConnectionInterface{
     public final static int MINRADIUS = 10;
     public final static int MAXFPS = 60;
     public final static double MINWEIGHT = 0.1;
+    public final static int MAX_PLAYER_ACC = 2;
     public static int frames = 0;
-    
+
     public CommunicationController controller;
     public HashMap<String,Integer> connections = new HashMap();
-    
-    private ScreenManager managment;    
+
+    private ScreenManager managment;
+    public static Ball playerBall = null;
     private int nextDirection = 0;
-    
+
     public HeyBalls(){
         // Call screen manager to begin program
         long time1 = 0;
@@ -65,7 +68,7 @@ public class HeyBalls implements ConnectionInterface{
             time2 = System.currentTimeMillis();
         }
     }
-    
+
     /**
      * Returns the mac address of the specified direction
      * @param direction Integer between 1 and 4, 1 being north,2 east...
@@ -79,7 +82,7 @@ public class HeyBalls implements ConnectionInterface{
         }
         return null;
     }
-    
+
     /**
      * Returns true if there's a connection on that direction
      * @param direction Integer between 1 and 4, 1 being north,2 east...
@@ -93,7 +96,7 @@ public class HeyBalls implements ConnectionInterface{
         }
         return false;
     }
-    
+
     /**
      * Connect to the specified ip with the direction also specified
      * @param ip Ipv4 addres in string format (XXX.XXX.XXX.XXX)
@@ -108,7 +111,7 @@ public class HeyBalls implements ConnectionInterface{
             System.out.println("Not connecting");
         }
     }
-    
+
     /**
      * Disconnects from the specified mac address
      * @param mac Mac address to disconnect from
@@ -116,14 +119,14 @@ public class HeyBalls implements ConnectionInterface{
     public void disconnect(String mac){
         controller.disconnect(mac);
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         HeyBalls main = new HeyBalls();
     }
-    
+
     /**
      * Send a ball object from this simulation to the simulation of the neighbor
      * @param direction Integer between 1 and 4, 1 being north,2 east...
@@ -136,7 +139,7 @@ public class HeyBalls implements ConnectionInterface{
             }
         }
     }
-    
+
     /**
      * Send a neighbor the position where you are.
      * @param mac Mac address of the neighbor
@@ -168,8 +171,23 @@ public class HeyBalls implements ConnectionInterface{
                 }
                 connections.replace(packet.getSourceID(), retVal);
                 break;
+            //I'm guessing packet 50 is for movement commands
+            case 50:
+                System.out.println("Packet 50, moving ball");
+                int move[] = (int[])packet.getObject();
+                //Guessing move[0] is power and move[1] is angle
+                int power = move[0];
+                int angle = move[1];
+                power = (power * MAX_PLAYER_ACC) / 100; //Get the actual acceleration limited by a constant
+                double powerX = (int) (power * Math.cos(angle)); //Get the X and Y axis acceleration
+                double powerY = (int) (power * Math.sin(angle));
+                playerBall.accelerate(powerX,powerY); //Send to the ball
+                break;
+            case 51:
+                System.out.println("Phone connected creating ball");
+                playerBall = new Ball(Color.MAGENTA,MAXRADIUS); //Create the player ball which will be Magenta and the biggest possible radius
+                break;
             default:
-                
                 break;
         }
     }
@@ -197,5 +215,10 @@ public class HeyBalls implements ConnectionInterface{
     public void onConnectionClosed(String mac) {
         System.out.println("Connection closed");
         connections.remove(mac);
+    }
+
+    @Override
+    public void onLookupUpdate(ArrayList<String> macs) {
+        //Do nothing
     }
 }

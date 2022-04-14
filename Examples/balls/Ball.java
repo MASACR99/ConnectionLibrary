@@ -17,15 +17,15 @@ import java.util.Random;
  * @author Joan Gil
  */
 public class Ball implements Serializable{
-    
+
     private int x;
     private int y;
-    private int speedX;
-    private int speedY;
+    private double speedX;
+    private double speedY;
     private Color color;
     private int radius;
     private double weight;
-    
+
     public Ball(Color color, int radi){
         Random ran = new Random();
         this.color = color;
@@ -36,13 +36,13 @@ public class Ball implements Serializable{
         speedX = ran.nextInt(10);
         speedY = ran.nextInt(10);
     }
-    
+
     /**
      * Change speed X and Y by a defined amount
      * @param accX Acceleration X axis
      * @param accY Acceleration Y axis
      */
-    public void accelerate(int accX, int accY){
+    public void accelerate(double accX, double accY){
         speedX = speedX + accX;
         speedY = speedY + accY;
         if (speedX > MAXSPEED){
@@ -56,7 +56,7 @@ public class Ball implements Serializable{
             speedY = -MAXSPEED;
         }
     }
-    
+
     /**
      * Reverse the X direction and loose some speed
      * @param loss If there's loos on impact
@@ -72,7 +72,7 @@ public class Ball implements Serializable{
             speedX = -speedX;
         }
     }
-    
+
     /**
      * Reverse the Y direction and loose some speed
      * @param loss If there's loos on impact
@@ -88,51 +88,51 @@ public class Ball implements Serializable{
             speedY = -speedY;
         }
     }
-    
-    public int getSpeedX(){
+
+    public double getSpeedX(){
         return this.speedX;
     }
-    
-    public int getSpeedY(){
+
+    public double getSpeedY(){
         return this.speedY;
     }
-    
-    public void setSpeedX(int speed){
+
+    public void setSpeedX(double speed){
         this.speedX = speed;
     }
-    
-    public void setSpeedY(int speed){
+
+    public void setSpeedY(double speed){
         this.speedY = speed;
     }
-    
+
     public void setX(int x){
         this.x = x-this.radius/2;
     }
-    
+
     public void setY(int y){
         this.y = y-this.radius/2;
     }
-    
+
     public int getRadius(){
         return this.radius;
     }
-    
+
     public int getX(){
         return (this.x+this.radius/2);
     }
-    
+
     public int getY(){
         return (this.y+this.radius/2);
     }
-    
+
     public int getOriginalX(){
         return this.x;
     }
-    
+
     public int getOriginalY(){
         return this.y;
     }
-    
+
     /**
      * Logic for the movement of a ball. Also does the logic for setting up the
      * position of the ball before sending it via socket.
@@ -176,8 +176,8 @@ public class Ball implements Serializable{
                     retVal = 1;
                 }
             }
-            this.setX(this.getX() + this.getSpeedX());
-            this.setY(this.getY() + this.getSpeedY());
+            this.setX(this.getX() + (int) this.getSpeedX());
+            this.setY(this.getY() + (int) this.getSpeedY());
         }else{
             if(this.getX() + this.getRadius() + this.getSpeedX() >= limitX){
                 this.setX(0);
@@ -186,7 +186,7 @@ public class Ball implements Serializable{
                 this.setX(limitX-this.getRadius());
                 retVal = 4;
             }
-            this.setX(this.getX() + this.getSpeedX());
+            this.setX(this.getX() + (int) this.getSpeedX());
             if(this.getY() + this.getRadius() + this.getSpeedY() >= limitY){
                 this.setY(0);
                 retVal = 3;
@@ -194,16 +194,16 @@ public class Ball implements Serializable{
                 this.setY(limitY-this.getRadius());
                 retVal = 1;
             }
-            this.setY(this.getY() + this.getSpeedY());
+            this.setY(this.getY() + (int) this.getSpeedY());
         }
         return retVal;
     }
-    
-    
+
+
     public void setColor(Color color){
         this.color = color;
     }
-    
+
     public Color getColor(){
         return this.color;
     }

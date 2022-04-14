@@ -4,10 +4,6 @@
  */
 package balls;
 
-import static balls.HeyBalls.GRAVITY;
-import static balls.HeyBalls.MAXRADIUS;
-import static balls.HeyBalls.MINRADIUS;
-import static balls.HeyBalls.frames;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,12 +11,14 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.JPanel;
 
+import static balls.HeyBalls.*;
+
 /**
  * Stores multiple balls and has all method and variables to make the simulation work
  * @author Joan Gil
  */
 public class Simulation extends JPanel {
-    
+
     private ArrayList<Ball> ballArray = new ArrayList();
     private int ballNum = 0;
     private boolean grav = false;
@@ -29,10 +27,10 @@ public class Simulation extends JPanel {
     private HeyBalls main;
     private int lastFrame = 0;
     private BallsPanel fatherPanel;
-    
+
     //array of colors to grab a random one just by position
     private final Color colors[] = {Color.red,Color.black, Color.blue, Color.green, Color.MAGENTA, Color.orange, Color.YELLOW};
-    
+
     public Simulation(HeyBalls main, BallsPanel fatherPanel){
         super();
         this.main = main;
@@ -50,7 +48,7 @@ public class Simulation extends JPanel {
     public void setDrag(boolean drag) {
         this.drag = drag;
     }
-    
+
     /**
      * Add balls or subtracts them based on the number given as a target
      * @param num Target number of balls
@@ -69,7 +67,7 @@ public class Simulation extends JPanel {
         }
         ballNum = num;
     }
-    
+
     /**
      * Adds a ball based on an object Ball. Also constraints it to the screen size
      * @param ball Object ball already created
@@ -87,17 +85,17 @@ public class Simulation extends JPanel {
         }
         ballNum = ballArray.size();
     }
-    
+
     private Color randomColor(){
         Random ran = new Random();
         return colors[ran.nextInt(colors.length)];
     }
-    
+
     private int randomRadius(){
         Random ran = new Random();
         return (ran.nextInt(MAXRADIUS-MINRADIUS)+MINRADIUS);
     }
-    
+
     /**
      * Has all the mathematical calculations based around contact of balls
      * it first makes the ball move, then looks for impacts with other balls,
@@ -131,8 +129,8 @@ public class Simulation extends JPanel {
                                 if (dist<=(ball.getRadius()/2)+(ballin.getRadius()/2)){
                                     //WE HAVE IMPAKT, some hard calculations YUUUUJUUU
                                     //change this shit
-                                    int speedX1 = ballin.getSpeedX();
-                                    int speedY1 = ballin.getSpeedY();
+                                    double speedX1 = ballin.getSpeedX();
+                                    double speedY1 = ballin.getSpeedY();
                                     if((ball.getSpeedX() >= 0 && speedX1 >= 0) || (ball.getSpeedX() <= 0 && speedX1 <= 0)){
                                         ballin.setSpeedX(-ball.getSpeedX());
                                         ball.setSpeedX(-speedX1);
@@ -161,7 +159,7 @@ public class Simulation extends JPanel {
         }
         return removeBalls;
     }
-    
+
     @Override
     public void paintComponent(Graphics g){
         Graphics2D g2d = (Graphics2D) g;
@@ -186,8 +184,13 @@ public class Simulation extends JPanel {
                         g2d.fillOval(ball.getOriginalX(), ball.getOriginalY(), ball.getRadius(), ball.getRadius());
                     }
                 }
+                //Force painting the player ball if it exists on top of any other ball
+                if(playerBall != null){
+                    g2d.setColor(playerBall.getColor());
+                    g2d.fillOval(playerBall.getOriginalX(), playerBall.getOriginalY(), playerBall.getRadius(), playerBall.getRadius());
+                }
             }
         }
     }
-    
+
 }

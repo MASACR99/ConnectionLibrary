@@ -14,11 +14,11 @@ import javax.swing.JTabbedPane;
  * @author Joan Gil
  */
 public class ScreenManager extends JPanel{
-    
+
     private BallsPanel jPanel1;
     private ConnectionPanel jPanel2;
     private HeyBalls heyBalls;
-    
+
     public ScreenManager(HeyBalls heyBalls){
         //Call super to also initialize default JPanel
         super();
@@ -26,11 +26,11 @@ public class ScreenManager extends JPanel{
         jPanel1 = new BallsPanel(heyBalls);
         jPanel2 = new ConnectionPanel(heyBalls);
         JTabbedPane tabs = new JTabbedPane();
-        
+
         //Finally set the final config
         tabs.addTab("Balls", jPanel1);
         tabs.addTab("Connections", jPanel2);
-        
+
         this.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -40,7 +40,7 @@ public class ScreenManager extends JPanel{
         c.weighty = 1;
         this.add(tabs,c);
     }
-    
+
     /**
      * Add a ball of object Ball to the simulation
      * @param ball Already defined object Ball
@@ -48,6 +48,6 @@ public class ScreenManager extends JPanel{
     public void addBall(Ball ball){
         jPanel1.addBall(ball);
     }
-    
+
 
 }

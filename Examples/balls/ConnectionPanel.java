@@ -23,7 +23,7 @@ import javax.swing.JPanel;
  * @author Joan Gil
  */
 public class ConnectionPanel extends JPanel{
-    
+
     private final int diameter = 25;
     private HeyBalls main;
     private JFrame ipPanel;
@@ -31,7 +31,7 @@ public class ConnectionPanel extends JPanel{
     private JFrame dataPanel;
     private JLabel ipLabel;
     private JButton button;
-    
+
     public ConnectionPanel(HeyBalls main){
         super();
         this.main = main;
@@ -52,11 +52,11 @@ public class ConnectionPanel extends JPanel{
         ipPanel = new JFrame();
         this.addMouseListener(new MouseListener(){
             @Override
-            public void mouseClicked(MouseEvent e) {}  
+            public void mouseClicked(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {}  
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {}  
+            public void mouseExited(MouseEvent e) {}
             @Override
             public void mousePressed(MouseEvent e) {
                 //check if mouse position is inside one of the circles
@@ -64,7 +64,7 @@ public class ConnectionPanel extends JPanel{
                 //if the connection is live
                 //or if it isn't show a menu asking for an ip address
                 //check bottom mid circle
-                if(e.getX() <= getWidthLocal()/2+diameter/2 && e.getX() >= getWidthLocal()/2-diameter/2 && 
+                if(e.getX() <= getWidthLocal()/2+diameter/2 && e.getX() >= getWidthLocal()/2-diameter/2 &&
                         e.getY() <= getHeightLocal() && e.getY() >= getHeightLocal()-diameter){
                     System.out.println("Pressed bottom");
                     if(main.haveDirection(3)){
@@ -74,13 +74,13 @@ public class ConnectionPanel extends JPanel{
                     }else{
                         //show a panel asking for an ip
                         String ip = JOptionPane.showInputDialog(ipPanel,
-                        "Ip to connect to?", null);
+                                "Ip to connect to?", null);
                         if(ip != null && !ip.isEmpty()){
                             main.connectTo(ip,3);
                         }
                     }
                 }//then check top mid
-                else if(e.getX() <= getWidthLocal()/2+diameter/2 && e.getX() >= getWidthLocal()/2-diameter/2 && 
+                else if(e.getX() <= getWidthLocal()/2+diameter/2 && e.getX() >= getWidthLocal()/2-diameter/2 &&
                         e.getY() <= 0+diameter && e.getY() >= 0){
                     System.out.println("Pressed top");
                     if(main.haveDirection(1)){
@@ -90,13 +90,13 @@ public class ConnectionPanel extends JPanel{
                     }else{
                         //show a panel asking for an ip
                         String ip = JOptionPane.showInputDialog(ipPanel,
-                        "Ip to connect to?", null);
+                                "Ip to connect to?", null);
                         if(ip != null && !ip.isEmpty()){
                             main.connectTo(ip,1);
                         }
                     }
                 }//then check right
-                else if(e.getX() <= getWidthLocal() && e.getX() >= getWidthLocal()-diameter && 
+                else if(e.getX() <= getWidthLocal() && e.getX() >= getWidthLocal()-diameter &&
                         e.getY() <= getHeightLocal()/2+diameter/2 && e.getY() >= getHeightLocal()/2-diameter/2){
                     System.out.println("Pressed right");
                     if(main.haveDirection(2)){
@@ -106,13 +106,13 @@ public class ConnectionPanel extends JPanel{
                     }else{
                         //show a panel asking for an ip
                         String ip = JOptionPane.showInputDialog(ipPanel,
-                        "Ip to connect to?", null);
+                                "Ip to connect to?", null);
                         if(ip != null && !ip.isEmpty()){
                             main.connectTo(ip,2);
                         }
                     }
                 }//finally check left
-                else if(e.getX() <= 0+diameter && e.getX() >= 0 && 
+                else if(e.getX() <= 0+diameter && e.getX() >= 0 &&
                         e.getY() <= getHeightLocal()/2+diameter/2 && e.getY() >= getHeightLocal()/2-diameter/2){
                     System.out.println("Pressed left");
                     if(main.haveDirection(4)){
@@ -121,26 +121,26 @@ public class ConnectionPanel extends JPanel{
                     }else{
                         //show a panel asking for an ip
                         String ip = JOptionPane.showInputDialog(ipPanel,
-                        "Ip to connect to?", null);
+                                "Ip to connect to?", null);
                         if(ip != null && !ip.isEmpty()){
                             main.connectTo(ip,4);
                         }
                     }
                 }
-            }  
+            }
             @Override
-            public void mouseReleased(MouseEvent e) {}  
+            public void mouseReleased(MouseEvent e) {}
         });
     }
-    
+
     private int getWidthLocal(){
         return this.getWidth();
     }
-    
+
     private int getHeightLocal(){
         return this.getHeight();
     }
-    
+
     @Override
     public void paintComponent(Graphics g){
         g.clearRect(0, 0, this.getWidth(), this.getHeight());
