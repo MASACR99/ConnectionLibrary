@@ -276,7 +276,7 @@ class Connection implements Runnable{
                         lastMessageReceived=System.currentTimeMillis();
                     }
                 }
-                Thread.sleep(50);
+                Thread.sleep(1);
             } catch (Exception ex) {
                 System.out.println("run connection: "+ex.getMessage());
             }
