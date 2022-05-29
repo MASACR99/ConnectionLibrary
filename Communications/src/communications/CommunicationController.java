@@ -22,8 +22,8 @@ public class CommunicationController {
     public final int SERVERHEALTHMAXWAIT;
     public final int ACKMAXWAIT;
     
-    static final int PC = 37;
-    static final int MVL = 38;
+    public static final int PC = 37;
+    public static final int MVL = 38;
     
     static final int SERVER = 24;
     static final int CLIENT = 25;
@@ -228,6 +228,29 @@ public class CommunicationController {
         return protocol.addCmd(id, new ProtocolDescription(id, description, expectedVariableType));
     }
     
+    
+    /**
+     * Returns the device type of the connection associated to the mac passed by
+     * parameter. If there isn't any connection associated to that mac, the return 
+     * value will be -1. 
+     * @param mac the mac of the connection.
+     * @return int, 37 for pc, 38 for mvl, -1 if there isn't a connection
+     */
+    public int getConnectedDeviceType(String mac){
+        int deviceType = -1;
+        ArrayList<Connection> connections = this.getAllConnections();
+        boolean found = false;
+        int i = 0;
+        while (!found || i < connections.size()){
+            if (connections.get(i).getConnectedMAC().equals(mac)){
+                deviceType = connections.get(i).getDeviceType();
+                found = true;
+            }
+            i++;
+        }
+        return deviceType;
+    }
+    
     public String getProtocolDescription(int id){
         ProtocolDescription description = protocol.getProtocol(id);
         String desc = description.getDescription() + ". Expected return type: " + description.getExpectedReturn();
@@ -267,7 +290,7 @@ public class CommunicationController {
     /**
      * Removes the connection which mac address is received by parameter
      * and sends the corresponding closure protocol
-     * @param con String with the mac of a connection
+     * @param mac String with the mac of a connection
      */
     public void disconnect(String mac){
         boolean found = false;

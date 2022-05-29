@@ -28,6 +28,7 @@ class Connection implements Runnable{
     private long lastMessageReceived;
     private InetAddress ip;
     private int connectionType;
+    private int deviceType;
     private boolean running;
     private String connectedMAC;
     private ConnectionInterfaceInitiater initiater;
@@ -173,6 +174,14 @@ class Connection implements Runnable{
      */
     String getLocalMac(){
         return this.controller.getLocalMAC();
+    }
+
+    /**
+     * Returns the deviceType of the connection
+     * @return deviceType of the connection
+     */
+    int getDeviceType() {
+        return deviceType;
     }
     
     /**
@@ -360,15 +369,15 @@ class Connection implements Runnable{
         this.addToLookup((String) packetReceived.getSourceID());
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
-        int deviceType=(int)packetReceived.getObject(); 
-        if (deviceType == MVL){
+        this.deviceType = (int)packetReceived.getObject(); 
+        if (this.deviceType == MVL){
             validated = true;
             packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
             this.controller.addMobileConnection(this);
             this.initiater.connectionEvent(this.connectedMAC);
         } 
-        else if (deviceType == PC){
+        else if (this.deviceType == PC){
             validated=this.controller.availableConnections();
             if (validated){
                 packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
