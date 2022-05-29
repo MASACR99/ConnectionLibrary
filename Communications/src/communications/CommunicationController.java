@@ -31,7 +31,7 @@ public class CommunicationController {
     static final int MAXATTEMPTS = 30;
     
     final ArrayList<Connection> pcConnections = new ArrayList<>();
-    private ArrayList<Connection> mobileConnections = new ArrayList<>();
+    final ArrayList<Connection> mobileConnections = new ArrayList<>();
     private final int maxPc;
     private ServerConnector serverConn;
     private ClientConnector clientConn;
@@ -634,12 +634,12 @@ public class CommunicationController {
     /**
      * Close all the pc connections. You can pass a connection to not close that 
      * connections in this moment.
-     * @param conn the connection to not close or null
+     * @param mac the connection to not close or null
      */
-    public void closePcConnections(Connection conn){
+    public void closePcConnections(String mac){
         synchronized(this.pcConnections){
             for (Connection con:this.pcConnections){
-                if (con!=null && (conn==null || con!=conn)){
+                if (con!=null && (mac == null || !con.getConnectedMAC().equals(mac))){
                     con.notifyClousure();
                 }
             }
@@ -649,12 +649,12 @@ public class CommunicationController {
     /**
      * Close all the mobile connections. You can pass a connection to not close that 
      * connections in this moment.
-     * @param conn the connection to not close or null
+     * @param mac the connection to not close or null
      */
-    public void closeMobileConnections(Connection conn){
+    public void closeMobileConnections(String mac){
         synchronized(this.mobileConnections){
             for (Connection con:this.mobileConnections){
-                if (con!=null && (conn==null || con!=conn)){
+                if (con!=null && (mac == null || !con.getConnectedMAC().equals(mac))){
                     con.notifyClousure();
                 }
             }
@@ -664,11 +664,11 @@ public class CommunicationController {
     /**
      * Close all the connections. You can pass a connection to not close that 
      * connections in this moment.
-     * @param conn the connection to not close or null
+     * @param mac the connection to not close or null
      */
-    public void closeAllConnections(Connection conn){
-        this.closePcConnections(null);
-        this.closeMobileConnections(null);
+    public void closeAllConnections(String mac){
+        this.closePcConnections(mac);
+        this.closeMobileConnections(mac);
     }
     
     /**
