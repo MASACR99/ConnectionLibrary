@@ -505,6 +505,7 @@ public class CommunicationController {
                 ServerHealth health = new ServerHealth(this,conn);
                 conn.setServerHealth(health);
                 synchronized(this.pcConnections){
+                    pcConnections.remove(null);
                     pcConnections.add(conn);
                 }
             }
