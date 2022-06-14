@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TO DO: Check if we need to use public, private, default or protected for our methods
@@ -242,7 +243,8 @@ public class CommunicationController {
         boolean found = false;
         int i = 0;
         while (!found || i < connections.size()){
-            if (connections.get(i).getConnectedMAC().equals(mac)){
+            if (connections.get(i) != null && connections.get(i).getConnectedMAC() != null &&
+                    connections.get(i).getConnectedMAC().equals(mac)){
                 deviceType = connections.get(i).getDeviceType();
                 found = true;
             }
@@ -351,10 +353,11 @@ public class CommunicationController {
      * @param command Id of the packet
      * @param data Object to be sent with the packet
      */
-    public void sendToNeighbors(int command, Object data){
-        synchronized(this.pcConnections){
-            for(Connection e : this.pcConnections){
-                if(e != null){
+    public void sendToNeighbors(int command, Object data, Connection conn){
+        ArrayList<Connection> connections = this.getAllConnections();
+        synchronized(connections){
+            for(Connection e : connections){
+                if(e != null && e != conn){
                     e.send(new ProtocolDataPacket(this.localMAC,e.getConnectedMAC(),command,data));
                 }
             }
@@ -410,7 +413,7 @@ public class CommunicationController {
      */
     HashMap<String, Integer> joinMaps(){
         HashMap<String,Integer> map = new HashMap<>();
-        HashMap<String,Integer> pointerMap = new HashMap<>();
+        ConcurrentHashMap<String,Integer> pointerMap = new ConcurrentHashMap<>();
         ArrayList<Connection> allConnections = this.getAllConnections();
         for(Connection e : allConnections){
             if(e != null){
@@ -688,7 +691,7 @@ public class CommunicationController {
     }
     /**
      * Sends the ip to connect to to all the connected peers
-     * @param ip Neighbor ip where the other peers will connect
+     * @param con Neighbor con where the other peers will connect
      */
     void starConnection(Connection con){
         //this won't work probably, connection will have to send a packet to the neighbor and

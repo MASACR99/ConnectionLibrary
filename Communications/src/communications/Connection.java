@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class that controls a Socket and everything related to it. It also has a thread
@@ -32,7 +33,7 @@ class Connection implements Runnable{
     private boolean running;
     private String connectedMAC;
     private ConnectionInterfaceInitiater initiater;
-    private HashMap<String, Integer> lookup= new HashMap<>();
+    private ConcurrentHashMap<String, Integer> lookup= new ConcurrentHashMap<>();
     
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -60,39 +61,42 @@ class Connection implements Runnable{
      * precise results
      * @param neighborMap Received hashmap of the neighbor
      */
-    void updateLookup(HashMap<String,Integer> neighborMap){
+    synchronized void updateLookup(HashMap<String,Integer> neighborMap){
         boolean saved = false;
         //Update the lookup adding the macs we didn't have 
         //and updating the number of hops there's to a target
-        for(String str : neighborMap.keySet()){
-            if(!lookup.containsKey(str)){
-                //Notify and start a thread that will send a message to all
-                //neighbors with the updated lookup
-                saved = true;
-                lookup.put(str, neighborMap.get(str)+1);
-            }else{
-                if(lookup.get(str) != (neighborMap.get(str)+1)){
+        for (String str : neighborMap.keySet()) {
+            if (!str.equals(controller.getLocalMAC())){
+                if (!lookup.containsKey(str)) {
                     //Notify and start a thread that will send a message to all
                     //neighbors with the updated lookup
                     saved = true;
-                    lookup.replace(str, neighborMap.get(str)+1);
+                    lookup.put(str, neighborMap.get(str) + 1);
+                } else {
+                    if (lookup.get(str) != (neighborMap.get(str) + 1)) {
+                        //Notify and start a thread that will send a message to all
+                        //neighbors with the updated lookup
+                        saved = true;
+                        lookup.replace(str, neighborMap.get(str) + 1);
+                    }
                 }
             }
         }
         //If the neighbor lost complete connection to a mac we thought he
         //had we must remove it from out map
         for(String str : lookup.keySet()){
-            if(!neighborMap.containsKey(str)){
+            if(!this.getConnectedMAC().equals(str) && !neighborMap.containsKey(str)){
                 lookup.remove(str);
                 saved = true;
             }
         }
-        if(controller.getMaxPc() == 0){
+
+        if (controller.getMaxPc() == 0) {
             controller.starConnection(this);
         }
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
-        if(saved){
+        if (saved) {
             updateNeighbors();
         }
     }
@@ -101,17 +105,17 @@ class Connection implements Runnable{
      * Merges already existing lookup with data from the packet trace packet.
      * @param macPath Macs of all the received macs from the packet trace packet.
      */
-    void addToLookup(ArrayList <String> macPath){
+    synchronized void addToLookup(ArrayList <String> macPath){
         int counter=1;
         boolean saved = false;
-        for(String str : macPath){
-            if(!lookup.containsKey(str)){
+        for (String str : macPath) {
+            if (!lookup.containsKey(str)) {
                 //Notify and start a thread that will send a message to all
                 //neighbors with the updated lookup
                 saved = true;
                 lookup.put(str, counter);
-            }else{
-                if(lookup.get(str) > counter){
+            } else {
+                if (lookup.get(str) > counter) {
                     //Notify and start a thread that will send a message to all
                     //neighbors with the updated lookup
                     saved = true;
@@ -122,7 +126,7 @@ class Connection implements Runnable{
         }
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
-        if(saved){
+        if (saved) {
             updateNeighbors();
         }
     }
@@ -131,15 +135,15 @@ class Connection implements Runnable{
      * Adds the mac as the connected mac to the lookup.
      * @param mac Neighbor mac.
      */
-    void addToLookup(String mac){
+    synchronized void addToLookup(String mac){
         boolean saved = false;
-        if(!lookup.containsKey(mac)){
+        if (!lookup.containsKey(mac)) {
             //Notify and start a thread that will send a message to all
             //neighbors with the updated lookup
             saved = true;
             lookup.put(mac, 1);
-        }else{
-            if(lookup.get(mac) > 1){
+        } else {
+            if (lookup.get(mac) > 1) {
                 //Notify and start a thread that will send a message to all
                 //neighbors with the updated lookup
                 saved = true;
@@ -148,7 +152,7 @@ class Connection implements Runnable{
         }
         //To avoid spending processing time instanciating stuff we put it last inside
         //an if to just do it if necessary
-        if(saved){
+        if (saved) {
             updateNeighbors();
         }
     }
@@ -161,7 +165,7 @@ class Connection implements Runnable{
         Thread lookupUpdaterThread = new Thread(new Runnable(){
             @Override
             public void run() {
-                controller.sendToNeighbors(13, controller.joinMaps());
+                controller.sendToNeighbors(13, controller.joinMaps(), Connection.this);
             }
         });
         lookupUpdaterThread.start();
@@ -190,15 +194,15 @@ class Connection implements Runnable{
      * @param mac String with the MAC address to get the jumps to
      * @return Number of jumps if any, else -1
      */
-    int getJumpsTo(String mac){
+    synchronized int getJumpsTo(String mac){
         if(lookup.containsKey(mac)){
             return lookup.get(mac);
         }else{
             return -1;
         }
     }
-    
-    HashMap<String,Integer> getLookup(){
+
+    synchronized ConcurrentHashMap<String,Integer> getLookup(){
         return lookup;
     }
     
@@ -288,6 +292,7 @@ class Connection implements Runnable{
                 Thread.sleep(1);
             } catch (Exception ex) {
                 System.out.println("run connection: "+ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }
@@ -302,6 +307,7 @@ class Connection implements Runnable{
             this.output.writeObject(packet);
         } catch (IOException ex) {
             System.out.println("Couldn't send message: "+ex.getMessage());
+            ex.printStackTrace();
         }
     }
     
@@ -366,23 +372,24 @@ class Connection implements Runnable{
      */
     void processDeviceType(ProtocolDataPacket packetReceived){
         ProtocolDataPacket packet;
-        this.addToLookup((String) packetReceived.getSourceID());
         this.connectedMAC = (String) packetReceived.getSourceID();
         boolean validated=false;
         this.deviceType = (int)packetReceived.getObject(); 
         if (this.deviceType == MVL){
             validated = true;
+            this.controller.addMobileConnection(this);
+            this.addToLookup((String) packetReceived.getSourceID());
             packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
             send(packet);
-            this.controller.addMobileConnection(this);
             this.initiater.connectionEvent(this.connectedMAC);
         } 
         else if (this.deviceType == PC){
             validated=this.controller.availableConnections();
             if (validated){
+                this.controller.addPcConnection(this);
+                this.addToLookup((String) packetReceived.getSourceID());
                 packet = new ProtocolDataPacket(this.controller.getLocalMAC(),this.connectedMAC,5,this.controller.joinMaps());
                 send(packet);
-                this.controller.addPcConnection(this);
                 this.initiater.connectionEvent(this.connectedMAC);
             }
         }
@@ -406,7 +413,6 @@ class Connection implements Runnable{
      * else we close the socket and stop the thread from running anymore.
      * Always receives a pc connections, since mobile ones don't need to
      * be validated.
-     * @param packetReceived This is the last packet received from the starting handshake. 
      */
     void processValidation(){
         this.controller.addPcConnection(this);
