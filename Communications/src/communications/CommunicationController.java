@@ -481,7 +481,7 @@ public class CommunicationController {
             Connection conn = new Connection(this, socket,initiater, protocol);
             Thread thread = new Thread(conn);
             thread.start();
-        }catch(IOException ex){
+        }catch(Exception ex){
             System.out.println("Problem creating a connection: " + ex.getMessage());
         }
     }

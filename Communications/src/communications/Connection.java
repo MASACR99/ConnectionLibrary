@@ -324,7 +324,12 @@ class Connection implements Runnable{
         } catch (Exception ex) {
             System.out.println("Error receiving message: "+ex.getMessage());
             this.statusOk=false;
-            this.serverHealth.setTestRequestWaiting(false);
+            if (this.deviceType == MVL){
+                this.processClousure(false);
+            }
+            else if (this.serverHealth != null) {
+                this.serverHealth.setTestRequestWaiting(false);
+            }
         }
         return object;
     }
