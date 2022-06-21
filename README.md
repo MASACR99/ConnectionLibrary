@@ -54,13 +54,13 @@ We use MAC addresses to know to whom send the messages, and to have that data we
 2. Server responds by accepting the socket connection, starting a new Connection thread and sending an "askDeviceType" message.
 3. Client receives the accept and the first message of the handshake after which stores the MAC address of the sender in a variable and sends it's device type, either mobile or pc connection
 4. Server also stores the mac of the sender as the connected MAC address and based on the type of device the handshake changes so followign first the mobile connection:
-5a. The mobile connections are always accepted so the connection is added to the ArrayList on the controller
-5b. The pc connections are only accepter if there's space in the controller, this limit is user defined to define specific network structures, like star-connections, circle connections...
-6a. After ACCEPTING the connection an askLookup message is sent with the data as the lookup table of the server.
-7a. Client receives that message, updates it's lookup (we will get into lookups a bit later) and sends it's lookup back
-8a. Server also updates it's lookups and sends the final message of the handshake to approve the connection as valid.
-6b. In case the connection CANNOT be ACCEPTED a new protocol starts, a new message starts being sent to all already connected and accepted peers asking if they have space for a new connection giving them the IP of the connection, this message will, in the worst case scenario, go fully around all peers and die. The server also sends a close message to the connected peer.
-7b. After a connection receives the message asking to accept a new connection, that peer connects to the IP given and the handshake starts again.
+5. The mobile connections are always accepted so the connection is added to the ArrayList on the controller
+6. The pc connections are only accepter if there's space in the controller, this limit is user defined to define specific network structures, like star-connections, circle connections...
+7. After ACCEPTING the connection an askLookup message is sent with the data as the lookup table of the server.
+8. Client receives that message, updates it's lookup (we will get into lookups a bit later) and sends it's lookup back
+9. Server also updates it's lookups and sends the final message of the handshake to approve the connection as valid.
+10. In case the connection CANNOT be ACCEPTED a new protocol starts, a new message starts being sent to all already connected and accepted peers asking if they have space for a new connection giving them the IP of the connection, this message will, in the worst case scenario, go fully around all peers and die. The server also sends a close message to the connected peer.
+11. After a connection receives the message asking to accept a new connection, that peer connects to the IP given and the handshake starts again.
 
 Our protocol is also expandable giving the user space to put their codes and definitions so they can use the librayr and get an event when one of their packages is received.
 
