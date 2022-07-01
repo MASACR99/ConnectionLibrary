@@ -242,7 +242,7 @@ public class CommunicationController {
         ArrayList<Connection> connections = this.getAllConnections();
         boolean found = false;
         int i = 0;
-        while (!found || i < connections.size()){
+        while (!found && i < connections.size()){
             if (connections.get(i) != null && connections.get(i).getConnectedMAC() != null &&
                     connections.get(i).getConnectedMAC().equals(mac)){
                 deviceType = connections.get(i).getDeviceType();
